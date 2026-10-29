@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>我的课程 - 特殊工种延期教育系统</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif; background: #f0f2f5; color: #262626; min-height: 100vh; }
+  a { text-decoration: none; color: inherit; }
+
+  /* 顶部导航栏 */
+  .topbar { position: fixed; top: 0; left: 0; right: 0; height: 60px; background: #fff; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; z-index: 100; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+  .brand { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 600; color: #1f1f1f; }
+  .brand .logo { width: 32px; height: 32px; border-radius: 8px; background: #1677ff; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .user { display: flex; align-items: center; gap: 16px; color: #595959; font-size: 14px; }
+  .user .avatar { width: 32px; height: 32px; border-radius: 50%; background: #e6f4ff; color: #1677ff; display: flex; align-items: center; justify-content: center; font-weight: 600; }
+  .user .divider { width: 1px; height: 16px; background: #e8e8e8; }
+  .logout { background: none; border: none; color: #8c8c8c; cursor: pointer; font-size: 14px; }
+  .logout:hover { color: #ff4d4f; }
+
+  /* 左侧菜单栏 */
+  .sidebar { position: fixed; top: 60px; left: 0; bottom: 0; width: 220px; background: #001529; color: rgba(255,255,255,0.75); padding: 12px 0; overflow-y: auto; z-index: 99; }
+  .menu-item { display: flex; align-items: center; gap: 12px; padding: 12px 24px; font-size: 14px; cursor: pointer; border-left: 3px solid transparent; transition: all 0.2s; }
+  .menu-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
+  .menu-item.active { background: #1677ff; color: #fff; border-left-color: #fff; }
+  .menu-item.disabled { color: rgba(255,255,255,0.3); cursor: not-allowed; }
+  .menu-item.disabled:hover { background: transparent; color: rgba(255,255,255,0.3); }
+  .menu-item .icon { font-size: 16px; width: 20px; text-align: center; }
+
+  /* 内容区 */
+  .main { margin-left: 220px; margin-top: 60px; padding: 24px; min-height: calc(100vh - 60px); }
+  .page-title { font-size: 20px; font-weight: 600; margin-bottom: 16px; color: #1f1f1f; }
+
+  /* 红色加粗提示 */
+  .deadline-tip {
+    background: #fff1f0; border: 1px solid #ffa39e; color: #cf1322;
+    font-weight: 700; padding: 12px 16px; border-radius: 8px;
+    font-size: 15px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+  }
+
+  /* 提示条 */
+  .tip-bar { background: #fff7e6; border: 1px solid #ffd591; color: #d46b08; padding: 12px 16px; border-radius: 8px; font-size: 14px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .tip-bar .ico { font-size: 18px; }
+
+  /* 筛选栏 */
+  .filter-bar { background: #fff; border-radius: 10px; padding: 16px 20px; display: flex; align-items: center; gap: 12px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); flex-wrap: wrap; }
+  .filter-bar label { font-size: 14px; color: #595959; }
+  .filter-bar select, .filter-bar input { height: 36px; padding: 0 12px; border: 1px solid #d9d9d9; border-radius: 6px; font-size: 14px; outline: none; transition: all 0.2s; background: #fff; }
+  .filter-bar select:hover, .filter-bar input:hover { border-color: #4096ff; }
+  .filter-bar select:focus, .filter-bar input:focus { border-color: #1677ff; box-shadow: 0 0 0 2px rgba(22,119,255,0.12); }
+  .filter-bar input { width: 220px; }
+
+  /* 表格 */
+  .table-card { background: #fff; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; }
+  thead th { background: #fafafa; padding: 14px 16px; text-align: left; font-size: 13px; font-weight: 600; color: #595959; border-bottom: 1px solid #f0f0f0; }
+  tbody td { padding: 14px 16px; font-size: 14px; color: #262626; border-bottom: 1px solid #f5f5f5; }
+  tbody tr { transition: background 0.15s; }
+  tbody tr:hover { background: #f0f7ff; }
+  tbody tr:last-child td { border-bottom: none; }
+  .amount { font-weight: 600; color: #cf1322; }
+
+  .tag-notstart { background: #f5f5f5; color: #595959; border: 1px solid #d9d9d9; }
+  .section-title { font-size: 16px; font-weight: 600; color: #1f1f1f; margin: 24px 0 12px; }
+  .progress-cell { display: flex; align-items: center; gap: 8px; }
+  .progress-mini { width: 80px; height: 8px; background: #f0f0f0; border-radius: 4px; overflow: hidden; }
+  .progress-mini-bar { height: 100%; background: #1677ff; border-radius: 4px; }
+  .progress-mini-bar.done { background: #52c41a; }
+  .pagination { display: flex; align-items: center; justify-content: flex-end; gap: 6px; padding: 14px 16px; }
+  .page-btn { min-width: 32px; height: 32px; padding: 0 8px; border: 1px solid #d9d9d9; background: #fff; border-radius: 6px; cursor: pointer; font-size: 13px; color: #595959; }
+  .page-btn:hover:not(:disabled) { color: #1677ff; border-color: #1677ff; }
+  .page-btn.active { background: #1677ff; color: #fff; border-color: #1677ff; }
+  .page-btn:disabled { color: #bfbfbf; cursor: not-allowed; }
+  .page-info { font-size: 13px; color: #8c8c8c; margin-right: 8px; }
+
+  .tag { display: inline-flex; align-items: center; padding: 2px 10px; border-radius: 4px; font-size: 12px; font-weight: 500; }
+  .tag-pending { background: #fff7e6; color: #d46b08; border: 1px solid #ffd591; }
+  .tag-info { background: #e6f4ff; color: #1677ff; border: 1px solid #91caff; }
+  .tag-done { background: #f6ffed; color: #389e0d; border: 1px solid #b7eb8f; }
+  .tag-reached { background: #e6fffb; color: #13c2c2; border: 1px solid #87e8de; font-weight: 600; }
+  .tag-rejected { background: #fff1f0; color: #cf1322; border: 1px solid #ffa39e; }
+  .hours-cell { font-size: 14px; }
+  .hours-cell .cur { font-weight: 600; color: #1677ff; }
+  .hours-cell .cur.ok { color: #13c2c2; }
+  .hours-cell .cur.warn { color: #fa8c16; }
+
+  .btn { height: 34px; padding: 0 16px; border: none; border-radius: 6px; font-size: 13px; cursor: pointer; transition: all 0.2s; font-weight: 500; }
+  .btn-primary { background: #1677ff; color: #fff; }
+  .btn-primary:hover:not(:disabled) { background: #4096ff; }
+  .btn-primary:active:not(:disabled) { background: #0958d9; }
+  .btn-primary:disabled { background: #bfbfbf; cursor: not-allowed; }
+  .btn-default { background: #fff; color: #595959; border: 1px solid #d9d9d9; }
+  .btn-default:hover:not(:disabled) { color: #1677ff; border-color: #1677ff; }
+  .btn-default:disabled { background: #f5f5f5; color: #bfbfbf; border-color: #e8e8e8; cursor: not-allowed; }
+  .row-actions { display: flex; gap: 8px; }
+
+  .empty { text-align: center; padding: 60px 20px; color: #8c8c8c; font-size: 14px; }
+
+  /* 弹窗 */
+  .modal-mask { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 1000; align-items: center; justify-content: center; }
+  .modal-mask.show { display: flex; }
+  .modal { background: #fff; border-radius: 10px; width: 420px; max-width: 90vw; box-shadow: 0 12px 40px rgba(0,0,0,0.2); overflow: hidden; animation: pop 0.2s ease; }
+  .modal.wide { width: 560px; }
+  @keyframes pop { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .modal-header { padding: 16px 20px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; justify-content: space-between; }
+  .modal-title { font-size: 16px; font-weight: 600; color: #1f1f1f; }
+  .modal-close { cursor: pointer; color: #8c8c8c; font-size: 20px; line-height: 1; background: none; border: none; }
+  .modal-close:hover { color: #262626; }
+  .modal-body { padding: 20px; }
+  .modal-icon { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; margin: 0 auto 14px; }
+  .modal-footer { padding: 12px 20px 20px; display: flex; gap: 10px; justify-content: center; }
+
+  /* 发票弹窗专用 */
+  .inv-order-info { background: #fafafa; border: 1px solid #f0f0f0; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; font-size: 13px; color: #595959; line-height: 1.9; }
+  .inv-order-info .kv { display: flex; }
+  .inv-order-info .kv .k { width: 80px; color: #8c8c8c; }
+  .inv-order-info .kv .v { color: #262626; font-weight: 500; }
+  .inv-order-info .kv .v.price { color: #cf1322; font-weight: 700; }
+  .inv-type-row { display: flex; align-items: center; gap: 24px; padding: 10px 0 14px; border-bottom: 1px dashed #f0f0f0; margin-bottom: 14px; }
+  .inv-type-row .label { font-size: 14px; color: #262626; font-weight: 500; }
+  .inv-type-row label { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; color: #262626; cursor: pointer; }
+  .inv-type-row input[type=radio] { accent-color: #1677ff; width: 14px; height: 14px; }
+  .inv-form .inv-field { margin-bottom: 14px; }
+  .inv-form .inv-field label { display: block; font-size: 13px; color: #262626; margin-bottom: 6px; font-weight: 500; }
+  .inv-form .inv-field label .req { color: #ff4d4f; margin-right: 2px; }
+  .inv-form .inv-field input {
+    width: 100%; height: 38px; padding: 0 12px; border: 1px solid #d9d9d9;
+    border-radius: 6px; font-size: 14px; outline: none; transition: all 0.2s; background: #fff;
+  }
+  .inv-form .inv-field input:focus { border-color: #1677ff; box-shadow: 0 0 0 2px rgba(22,119,255,0.12); }
+  .inv-form .inv-field input.err { border-color: #ff4d4f; }
+  .inv-form .inv-field .err-msg { font-size: 12px; color: #ff4d4f; margin-top: 4px; min-height: 16px; display: block; }
+  .inv-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .inv-form-section { margin-bottom: 4px; }
+  .inv-form-section.hidden { display: none; }
+  .inv-foot-btns { padding: 4px 20px 20px; display: flex; gap: 10px; justify-content: flex-end; }
+
+  /* 安全生产教育培训证书 */
+  .safety-cert { border: 2px solid #cf1322; border-radius: 8px; padding: 24px 28px; background: #fffaf0; position: relative; }
+  .safety-cert::before { content: ''; position: absolute; top: 6px; left: 6px; right: 6px; bottom: 6px; border: 1px dashed #ff7875; border-radius: 6px; pointer-events: none; }
+  .safety-cert-title { text-align: center; font-size: 20px; font-weight: 700; color: #cf1322; letter-spacing: 2px; margin-bottom: 4px; }
+  .safety-cert-sub { text-align: center; font-size: 12px; color: #8c8c8c; border-bottom: 1px solid #f0d0d0; padding-bottom: 12px; margin-bottom: 14px; }
+  .safety-cert-body { font-size: 14px; color: #262626; line-height: 2; }
+  .safety-cert-body .label { color: #8c8c8c; display: inline-block; width: 90px; }
+  .safety-cert-body .val { font-weight: 600; color: #1f1f1f; }
+  .safety-cert-body .cert-no { font-family: 'Courier New', monospace; color: #cf1322; font-weight: 700; }
+  .safety-cert-seal { position: absolute; right: 20px; bottom: 20px; width: 90px; height: 90px; border: 3px solid #cf1322; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #cf1322; font-size: 12px; font-weight: 700; transform: rotate(-15deg); text-align: center; line-height: 1.3; background: rgba(255,255,255,0.6); }
+
+  /* Toast */
+  .toast { position: fixed; top: 84px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: #fff; padding: 10px 20px; border-radius: 6px; font-size: 14px; z-index: 2000; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><span class="logo">🛡️</span>特殊工种延期教育系统</div>
+  <div class="user">
+    <span class="avatar" id="user-avatar">张</span><span>学员：<span id="user-name">张三</span></span><span class="divider"></span>
+    <span>证件号：<span id="user-idcard">110***********1234</span></span><span class="divider"></span>
+    <button class="logout" onclick="logout()">退出登录</button>
+  </div>
+</header>
+<aside class="sidebar">
+  <a href="工作台.html" class="menu-item" style="display:none;"><span class="icon">🏠</span><span>首页工作台</span></a>
+  <a href="个人报名信息.html" class="menu-item"><span class="icon">📋</span><span>个人报名信息</span></a>
+  <a href="我的课程.html" class="menu-item active" data-lock="1"><span class="icon">📚</span><span>我的课程</span></a>
+  <a href="缴费订单.html" class="menu-item"><span class="icon">💰</span><span>缴费订单</span></a>
+  <a href="我的考试.html" class="menu-item" data-lock="1"><span class="icon">📝</span><span>我的考试</span></a>
+  <a href="继续教育档案.html" class="menu-item" style="display:none;"><span class="icon">📄</span><span>继续教育档案</span></a>
+  <a href="我的证书.html" class="menu-item" style="display:none;"><span class="icon">🎓</span><span>我的证书</span></a>
+  <a href="系统公告.html" class="menu-item" style="display:none;"><span class="icon">📢</span><span>系统公告</span></a>
+  <a href="帮助中心.html" class="menu-item" style="display:none;"><span class="icon">❓</span><span>帮助中心</span></a>
+</aside>
+<main class="main">
+  <div class="page-title">我的课程</div>
+
+  <!-- 醒目红色加粗提示 -->
+  <div class="deadline-tip">
+    <span style="font-size:18px;">⏰</span>请在 7 天内完成学习及考试！
+  </div>
+
+  <div id="tip-bar" class="tip-bar" style="display:none;">
+    <span class="ico">⚠️</span>
+    <span id="tip-text">您还没有报名档案，请前往 <a href="个人报名信息.html" style="color:#1677ff;text-decoration:underline;">个人报名信息</a> 添加报名学习。</span>
+  </div>
+
+  <div class="filter-bar">
+    <label>工种：</label>
+    <select id="filter-worktype">
+      <option value="">全部</option>
+      <option value="低压电工作业">低压电工作业</option>
+      <option value="高压电工作业">高压电工作业</option>
+      <option value="焊接与热切割作业">焊接与热切割作业</option>
+      <option value="高处作业">高处作业</option>
+      <option value="制冷与空调作业">制冷与空调作业</option>
+      <option value="煤矿安全作业">煤矿安全作业</option>
+    </select>
+    <label style="margin-left:12px;">档案状态：</label>
+    <select id="filter-status">
+      <option value="">全部</option>
+      <option value="pending">待审核</option>
+      <option value="approved_unpaid">审核通过待缴费</option>
+      <option value="paid">已缴费可学习</option>
+    </select>
+    <input type="text" id="search-input" placeholder="搜索工种名称 / 证书编号">
+  </div>
+
+  <div class="table-card">
+    <table>
+      <thead>
+        <tr>
+          <th>工种名称</th>
+          <th>证书编号</th>
+          <th>档案状态</th>
+          <th>已累计学时</th>
+          <th>要求总学时</th>
+          <th>24h 内已学</th>
+          <th>费用金额</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="course-tbody"></tbody>
+    </table>
+  </div>
+
+  <div class="section-title">课程学习进度</div>
+  <div class="filter-bar">
+    <label>工种：</label>
+    <select id="c-filter-worktype">
+      <option value="">全部</option>
+      <option value="低压电工作业">低压电工作业</option>
+      <option value="高压电工作业">高压电工作业</option>
+      <option value="焊接与热切割作业">焊接与热切割作业</option>
+      <option value="高处作业">高处作业</option>
+      <option value="制冷与空调作业">制冷与空调作业</option>
+      <option value="煤矿安全作业">煤矿安全作业</option>
+    </select>
+    <label style="margin-left:12px;">课程状态：</label>
+    <select id="c-filter-status">
+      <option value="">全部</option>
+      <option value="notstart">未开始</option>
+      <option value="learning">学习中</option>
+      <option value="done">已完成</option>
+    </select>
+    <input type="text" id="c-search-input" placeholder="搜索课程名称">
+  </div>
+  <div class="table-card">
+    <table>
+      <thead>
+        <tr>
+          <th>课程名称</th>
+          <th>对应工种</th>
+          <th>总课时</th>
+          <th>已完成课时</th>
+          <th>学习进度</th>
+          <th>课程状态</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="course-progress-tbody"></tbody>
+    </table>
+    <div class="pagination" id="course-pagination"></div>
+  </div>
+</main>
+
+<!-- 填写发票信息弹窗 -->
+<div class="modal-mask" id="modal-invoice">
+  <div class="modal wide" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title">填写发票信息</span>
+      <button class="modal-close" onclick="closeModal('modal-invoice')">×</button>
+    </div>
+    <div class="modal-body">
+      <!-- 订单基础信息 -->
+      <div class="inv-order-info" id="inv-order-info">
+        <div class="kv"><span class="k">工种名称</span><span class="v" id="inv-work">-</span></div>
+        <div class="kv"><span class="k">证书编号</span><span class="v" id="inv-cert">-</span></div>
+        <div class="kv"><span class="k">费用金额</span><span class="v price">￥600 / 条</span></div>
+      </div>
+
+      <!-- 发票类型切换 -->
+      <div class="inv-type-row">
+        <span class="label">发票类型：</span>
+        <label><input type="radio" name="invType" value="personal" checked onchange="switchInvType('personal')"> 个人发票</label>
+        <label><input type="radio" name="invType" value="enterprise" onchange="switchInvType('enterprise')"> 企业发票</label>
+      </div>
+
+      <!-- 个人发票表单 -->
+      <form class="inv-form inv-form-section" id="inv-personal">
+        <div class="inv-field"><label><span class="req">*</span>姓名</label>
+          <input type="text" data-field="p.name" placeholder="请输入姓名">
+          <span class="err-msg"></span></div>
+        <div class="inv-field"><label><span class="req">*</span>身份证号</label>
+          <input type="text" data-field="p.idCard" placeholder="请输入 18 位身份证号" maxlength="18">
+          <span class="err-msg"></span></div>
+        <div class="inv-form-row">
+          <div class="inv-field"><label>电子发票接收邮箱（选填）</label>
+            <input type="text" data-field="p.email" placeholder="如填写需校验邮箱格式">
+            <span class="err-msg"></span></div>
+          <div class="inv-field"><label><span class="req">*</span>手机号</label>
+            <input type="text" data-field="p.phone" placeholder="请输入 11 位手机号" maxlength="11">
+            <span class="err-msg"></span></div>
+        </div>
+      </form>
+
+      <!-- 企业发票表单 -->
+      <form class="inv-form inv-form-section hidden" id="inv-enterprise">
+        <div class="inv-field"><label><span class="req">*</span>企业名称</label>
+          <input type="text" data-field="e.companyName" placeholder="请输入企业全称">
+          <span class="err-msg"></span></div>
+        <div class="inv-field"><label><span class="req">*</span>纳税人识别号 / 统一社会信用代码</label>
+          <input type="text" data-field="e.taxNo" placeholder="请输入 18 位统一社会信用代码" maxlength="18">
+          <span class="err-msg"></span></div>
+        <div class="inv-form-row">
+          <div class="inv-field"><label><span class="req">*</span>地址</label>
+            <input type="text" data-field="e.address" placeholder="请输入企业地址">
+            <span class="err-msg"></span></div>
+          <div class="inv-field"><label><span class="req">*</span>电话</label>
+            <input type="text" data-field="e.phone" placeholder="请输入企业联系电话">
+            <span class="err-msg"></span></div>
+        </div>
+        <div class="inv-field"><label><span class="req">*</span>开户行及账号</label>
+          <input type="text" data-field="e.bankAccount" placeholder="例如：中国工商银行菏泽分行 6222 ...">
+          <span class="err-msg"></span></div>
+        <div class="inv-form-row">
+          <div class="inv-field"><label><span class="req">*</span>联系人姓名</label>
+            <input type="text" data-field="e.contactName" placeholder="请输入联系人姓名">
+            <span class="err-msg"></span></div>
+          <div class="inv-field"><label><span class="req">*</span>联系人电话</label>
+            <input type="text" data-field="e.contactPhone" placeholder="请输入 11 位手机号" maxlength="11">
+            <span class="err-msg"></span></div>
+        </div>
+        <div class="inv-field"><label><span class="req">*</span>电子发票接收邮箱</label>
+          <input type="text" data-field="e.email" placeholder="请输入接收电子发票的邮箱">
+          <span class="err-msg"></span></div>
+      </form>
+    </div>
+    <div class="inv-foot-btns">
+      <button class="btn btn-default" onclick="closeModal('modal-invoice')">取消</button>
+      <button class="btn btn-primary" onclick="validateInvoiceAndNext()">下一步，去缴费</button>
+    </div>
+  </div>
+</div>
+
+<!-- 缴费弹窗 -->
+<div class="modal-mask" id="modal-pay">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title">课程缴费</span>
+      <button class="modal-close" onclick="closeModal('modal-pay')">×</button>
+    </div>
+    <div class="modal-body" style="text-align:center;">
+      <div id="pay-work" style="font-size:15px;font-weight:600;color:#262626;margin-bottom:4px;"></div>
+      <div style="font-size:13px;color:#8c8c8c;margin-bottom:16px;">费用 600 元 / 本条报名学习档案，请扫码完成缴费</div>
+      <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=QR%20code%20payment%20black%20and%20white%20square%20clean&image_size=square"
+           alt="缴费二维码" style="width:180px;height:180px;border:1px solid #f0f0f0;border-radius:8px;background:#fafafa;">
+      <div style="font-size:12px;color:#bfbfbf;margin-top:12px;">（演示原型：二维码仅作展示，点击下方按钮模拟缴费成功）</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="confirmPaid()">已缴费，刷新状态</button>
+      <button class="btn btn-default" onclick="closeModal('modal-pay')">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- 安全生产教育培训证书预览弹窗 -->
+<div class="modal-mask" id="modal-safety-cert">
+  <div class="modal" style="width:620px;" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title">安全生产教育培训证书预览</span>
+      <button class="modal-close" onclick="closeModal('modal-safety-cert')">×</button>
+    </div>
+    <div class="modal-body">
+      <div id="safety-cert-body"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="downloadCurrentCert()">下载证书 PDF</button>
+      <button class="btn btn-primary" onclick="closeModal('modal-safety-cert')">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- 缴费提醒弹窗（存在「审核通过未缴费」的报名档案时，登录后首次进入本页自动弹出） -->
+<div class="modal-mask" id="modal-pay-remind">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title">缴费提醒</span>
+      <button class="modal-close" onclick="closePayRemind()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-icon" style="background:#fff7e6;color:#d46b08;">💰</div>
+      <p style="text-align:center;color:#262626;font-size:15px;line-height:1.6;">您有审核通过的报名信息，请完成课程缴费后开始学习！</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" style="background:#fff;color:#595959;border:1px solid #d9d9d9;" onclick="closePayRemind()">稍后再说</button>
+      <button class="btn btn-primary" onclick="goPayFromRemind()">去缴费</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ========== 读取当前登录用户 ==========
+  function getCurrentUser() {
+    try { return JSON.parse(sessionStorage.getItem('current_user') || 'null'); } catch(e) { return null; }
+  }
+  const currentUser = getCurrentUser();
+  if (currentUser) {
+    document.getElementById('user-name').textContent = currentUser.name || '张三';
+    document.getElementById('user-avatar').textContent = (currentUser.name || '张').charAt(0);
+    const idCard = currentUser.idCard || '110101199001011234';
+    document.getElementById('user-idcard').textContent =
+      idCard.length >= 10 ? idCard.substring(0,3) + '***********' + idCard.substring(idCard.length-4) : idCard;
+  }
+
+  // ========== 报名档案 & 缴费业务数据 ==========
+  const UNIT_PRICE = 600;
+  // 工种 -> 视频课程映射（视频学习页保持原有逻辑，仅按 courseId 打开）
+  const WORK_TYPE_COURSE = {
+    '低压电工作业': 'c2', '高压电工作业': 'c1', '焊接与热切割作业': 'c3',
+    '高处作业': 'c4', '制冷与空调作业': 'c2', '煤矿安全作业': 'c1'
+  };
+
+  function getArchives() {
+    try { return JSON.parse(sessionStorage.getItem('signup_archives') || '[]'); } catch(e) { return []; }
+  }
+  function saveArchives(list) { sessionStorage.setItem('signup_archives', JSON.stringify(list)); }
+
+  // 演示数据初始化（一人多证，覆盖三种档案状态）
+  function ensureDemoData() {
+    if (sessionStorage.getItem('pay_demo_seeded')) return;
+    sessionStorage.setItem('pay_demo_seeded', '1');
+    if (getArchives().length) return;
+    saveArchives([
+      { id:'REG2025010001', status:'approved', paid:true,  workType:'低压电工作业',     certNo:'TZ202111000123', learnType:'继续教育学员', createdAt:'2025-09-02 10:12', paidAt:'2025-09-03 09:20' },
+      { id:'REG2025010002', status:'approved', paid:false, workType:'高压电工作业',     certNo:'TZ202111000456', learnType:'继续教育学员', createdAt:'2025-09-05 14:30' },
+      { id:'REG2025010003', status:'pending',  paid:false, workType:'焊接与热切割作业', certNo:'TZ202111000789', learnType:'继续教育学员', createdAt:'2025-09-08 16:45' },
+      { id:'REG2025010004', status:'approved', paid:true,  workType:'高处作业',         certNo:'TZ202411000321', learnType:'继续教育学员', createdAt:'2024-08-11 09:00', paidAt:'2024-08-12 10:05' }
+    ]);
+    sessionStorage.setItem('qual_status', 'approved');
+    // 演示学时：REG2025010001（低压电工作业）已累计 18.5 学时，接近达标；REG2025010004 学时达标
+    sessionStorage.setItem('study_hours_REG2025010001', JSON.stringify({
+      totalHours: 18.5,
+      dailyRecords: [{ ts: Date.now() - 3600000, hours: 2.5 }, { ts: Date.now() - 7200000, hours: 4 }, { ts: Date.now() - 86400000, hours: 12 }],
+      watchedChapterIds: ['ch1','ch2','ch3'],
+      hoursReached: false
+    }));
+    sessionStorage.setItem('study_hours_REG2025010004', JSON.stringify({
+      totalHours: 21.0,
+      dailyRecords: [{ ts: Date.now() - 86400000*2, hours: 21 }],
+      watchedChapterIds: ['ch1','ch2'],
+      hoursReached: true
+    }));
+  }
+  ensureDemoData();
+
+  // ========== 登录后首次进入：存在「审核通过未缴费」档案时弹出缴费提醒 ==========
+  const hasUnpaidApproved = getArchives().some(a => a.status === 'approved' && !a.paid);
+  if (hasUnpaidApproved && sessionStorage.getItem('first_login') === '1') {
+    sessionStorage.removeItem('first_login');
+    setTimeout(() => document.getElementById('modal-pay-remind').classList.add('show'), 300);
+  }
+  function closePayRemind() { document.getElementById('modal-pay-remind').classList.remove('show'); }
+  function goPayFromRemind() {
+    closePayRemind();
+    const idx = getArchives().findIndex(a => a.status === 'approved' && !a.paid);
+    if (idx >= 0) openPay(idx);
+  }
+  document.getElementById('modal-pay-remind').addEventListener('click', e => {
+    if (e.target.id === 'modal-pay-remind') closePayRemind();
+  });
+
+  // 学时读取工具（与课程播放页一致）
+  const TARGET_HOURS = 21;
+  function getStudyHours(aid) {
+    try {
+      const raw = sessionStorage.getItem('study_hours_' + (aid || '_noarchive'));
+      if (raw) return JSON.parse(raw);
+    } catch(e) {}
+    return { totalHours: 0, dailyRecords: [], watchedChapterIds: [], hoursReached: false };
+  }
+  function hoursInLast24h(aid) {
+    const d = getStudyHours(aid);
+    const now = Date.now();
+    return d.dailyRecords.filter(r => now - r.ts < 24*60*60*1000).reduce((s, r) => s + r.hours, 0);
+  }
+
+  // 学时达标检查（用于已缴费的档案，首次发现达标时弹出提醒）
+  const hoursDoneShownKey = 'hours_done_shown';
+  const hoursDoneShown = new Set((sessionStorage.getItem(hoursDoneShownKey) || '').split(',').filter(Boolean));
+  function maybeShowHoursDoneModal(aid, workType) {
+    const d = getStudyHours(aid);
+    if (d.hoursReached && !hoursDoneShown.has(aid)) {
+      hoursDoneShown.add(aid);
+      sessionStorage.setItem(hoursDoneShownKey, Array.from(hoursDoneShown).join(','));
+      setTimeout(() => {
+        alert(`您报名的「${workType}」累计学时已达标（≥21 学时）！\n系统已生成安全生产教育培训证书，请前往参加考试。\n可在档案列表中点击「查看证书」查看证书内容。`);
+      }, 200);
+    }
+  }
+
+  // 档案状态归一化：待审核 / 审核通过待缴费 / 已缴费可学习 / 审核驳回 / 学时已完成
+  const ARCHIVE_STATUS = {
+    pending:         { cls: 'tag-pending',  text: '待审核' },
+    approved_unpaid: { cls: 'tag-info',     text: '审核通过待缴费' },
+    paid:            { cls: 'tag-done',     text: '已缴费可学习' },
+    hours_done:      { cls: 'tag-reached',  text: '学时已完成' },
+    rejected:        { cls: 'tag-rejected', text: '审核驳回' }
+  };
+  function stateOf(a) {
+    if (a.status === 'rejected') return 'rejected';
+    if (a.status === 'approved') {
+      if (!a.paid) return 'approved_unpaid';
+      const d = getStudyHours(a.id);
+      return d.hoursReached ? 'hours_done' : 'paid';
+    }
+    return 'pending';
+  }
+
+  let currentWorktype = '';
+  let currentStatus = '';
+  let currentKeyword = '';
+
+  function getFiltered() {
+    return getArchives().map((a, i) => Object.assign({ _idx: i, _state: stateOf(a) }, a))
+      .filter(a => {
+        const okWork = !currentWorktype || a.workType === currentWorktype;
+        const okStatus = !currentStatus || a._state === currentStatus;
+        const okKw = !currentKeyword || (a.workType || '').includes(currentKeyword) || (a.certNo || '').includes(currentKeyword);
+        return okWork && okStatus && okKw;
+      });
+  }
+
+  function render() {
+    const list = getFiltered();
+    const tbody = document.getElementById('course-tbody');
+    const all = getArchives();
+    const tipBar = document.getElementById('tip-bar');
+    if (all.length === 0) { tipBar.style.display = 'flex'; } else { tipBar.style.display = 'none'; }
+
+    if (list.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" class="empty">暂无符合条件的报名档案</td></tr>';
+      return;
+    }
+    tbody.innerHTML = list.map(a => {
+      const st = ARCHIVE_STATUS[a._state];
+      // 学时数据：仅审核通过的档案才有（审核通过待缴费时显示 0；已缴费但未学习也显示 0）
+      let hoursCell = '<span class="hours-cell">—</span>';
+      if (a.status === 'approved') {
+        const d = getStudyHours(a.id);
+        const h24 = hoursInLast24h(a.id);
+        const cls = d.hoursReached ? 'cur ok' : (d.totalHours >= 18 ? 'cur warn' : 'cur');
+        hoursCell = `<span class="hours-cell"><span class="${cls}">${d.totalHours.toFixed(1)}</span></span>`;
+      }
+      let actions;
+      if (a._state === 'paid') {
+        actions = `<button class="btn btn-primary" onclick="startLearn(${a._idx})">开始学习</button>`;
+      } else if (a._state === 'hours_done') {
+        // 学时已完成：查看证书 + 去考试
+        actions = `<div class="row-actions">
+          <button class="btn btn-default" onclick="previewSafetyCert('${a.id}', '${a.workType}', '${a.certNo}')">查看证书</button>
+          <button class="btn btn-primary" onclick="goExam()">去考试</button>
+        </div>`;
+      } else if (a._state === 'approved_unpaid') {
+        actions = `<div class="row-actions">
+          <button class="btn btn-primary" onclick="openPay(${a._idx})">立即缴费</button>
+          <button class="btn btn-default" disabled>开始学习</button>
+        </div>`;
+      } else {
+        actions = `<div class="row-actions">
+          <button class="btn btn-primary" disabled>立即缴费</button>
+          <button class="btn btn-default" disabled>开始学习</button>
+        </div>`;
+      }
+      return `<tr>
+        <td>${a.workType || '—'}</td>
+        <td>${a.certNo || '—'}</td>
+        <td><span class="tag ${st.cls}">${st.text}</span></td>
+        <td>${hoursCell}</td>
+        <td>21 学时</td>
+        <td><span class="hours-cell">${a.status === 'approved' ? hoursInLast24h(a.id).toFixed(1) + ' 学时' : '—'}</span></td>
+        <td class="amount">￥${UNIT_PRICE}</td>
+        <td>${actions}</td>
+      </tr>`;
+    }).join('');
+    // 学时达标弹窗（已首次渲染后）
+    list.forEach(a => { if (a._state === 'hours_done' || (a.status === 'approved' && a.paid)) maybeShowHoursDoneModal(a.id, a.workType); });
+  }
+
+  // ========== 缴费流程：发票弹窗 → 二维码弹窗 ==========
+  let payIdx = -1;
+  let pendingInvoice = null; // 校验通过后暂存，confirmPaid 时写入 archive
+
+  function openPay(idx) {
+    const a = getArchives()[idx];
+    if (!a) return;
+    payIdx = idx;
+    pendingInvoice = null;
+    // 填充订单基础信息
+    document.getElementById('inv-work').textContent = a.workType || '-';
+    document.getElementById('inv-cert').textContent = a.certNo || '-';
+    // 重置表单：默认个人发票，所有输入清空
+    switchInvType('personal', true);
+    document.getElementById('modal-invoice').classList.add('show');
+  }
+
+  // 切换发票类型：另一类型表单清空并隐藏
+  function switchInvType(type, reset) {
+    const pers = document.getElementById('inv-personal');
+    const ent = document.getElementById('inv-enterprise');
+    if (type === 'personal') {
+      pers.classList.remove('hidden');
+      ent.classList.add('hidden');
+      if (reset) pers.querySelectorAll('input').forEach(i => { i.value = ''; clearFieldErr(i); });
+      else ent.querySelectorAll('input').forEach(i => i.value = '');
+    } else {
+      ent.classList.remove('hidden');
+      pers.classList.add('hidden');
+      if (reset) ent.querySelectorAll('input').forEach(i => { i.value = ''; clearFieldErr(i); });
+      else pers.querySelectorAll('input').forEach(i => i.value = '');
+    }
+  }
+
+  function clearFieldErr(input) {
+    input.classList.remove('err');
+    const errSpan = input.parentElement.querySelector('.err-msg');
+    if (errSpan) errSpan.textContent = '';
+  }
+  function setFieldErr(input, msg) {
+    input.classList.add('err');
+    const errSpan = input.parentElement.querySelector('.err-msg');
+    if (errSpan) errSpan.textContent = msg;
+  }
+
+  // 校验 + 收集发票数据；返回 false 或 {type, ...fields}
+  function validateAndCollectInvoice() {
+    const invType = document.querySelector('input[name="invType"]:checked').value;
+    const form = document.getElementById(invType === 'personal' ? 'inv-personal' : 'inv-enterprise');
+    // 清除所有旧错误
+    form.querySelectorAll('input').forEach(clearFieldErr);
+
+    function getVal(field) {
+      return form.querySelector(`input[data-field="${field}"]`);
+    }
+    function fail(input, msg) { setFieldErr(input, msg); return null; }
+
+    const data = { type: invType };
+
+    if (invType === 'personal') {
+      const name = getVal('p.name');
+      const idCard = getVal('p.idCard');
+      const email = getVal('p.email');
+      const phone = getVal('p.phone');
+
+      if (!name.value.trim()) return fail(name, '请输入姓名');
+      if (!idCard.value.trim()) return fail(idCard, '请输入身份证号');
+      if (!/^\d{17}[\dXx]$/.test(idCard.value.trim())) return fail(idCard, '身份证号格式错误（应为 18 位）');
+      if (email.value.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim())) return fail(email, '邮箱格式错误');
+      if (!phone.value.trim()) return fail(phone, '请输入手机号');
+      if (!/^1\d{10}$/.test(phone.value.trim())) return fail(phone, '手机号格式错误（应为 11 位数字）');
+
+      data.name = name.value.trim();
+      data.idCard = idCard.value.trim().toUpperCase();
+      data.email = email.value.trim();
+      data.phone = phone.value.trim();
+    } else {
+      const coName = getVal('e.companyName');
+      const taxNo = getVal('e.taxNo');
+      const addr = getVal('e.address');
+      const tel = getVal('e.phone');
+      const bank = getVal('e.bankAccount');
+      const cName = getVal('e.contactName');
+      const cPhone = getVal('e.contactPhone');
+      const email = getVal('e.email');
+
+      if (!coName.value.trim()) return fail(coName, '请输入企业名称');
+      if (!taxNo.value.trim()) return fail(taxNo, '请输入纳税人识别号');
+      if (!/^[0-9A-Za-z]{15,18}$/.test(taxNo.value.trim())) return fail(taxNo, '统一社会信用代码格式错误');
+      if (!addr.value.trim()) return fail(addr, '请输入企业地址');
+      if (!tel.value.trim()) return fail(tel, '请输入企业电话');
+      if (!bank.value.trim()) return fail(bank, '请输入开户行及账号');
+      if (!cName.value.trim()) return fail(cName, '请输入联系人姓名');
+      if (!cPhone.value.trim()) return fail(cPhone, '请输入联系人电话');
+      if (!/^1\d{10}$/.test(cPhone.value.trim())) return fail(cPhone, '联系人手机号格式错误');
+      if (!email.value.trim()) return fail(email, '请输入接收邮箱');
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim())) return fail(email, '邮箱格式错误');
+
+      data.companyName = coName.value.trim();
+      data.taxNo = taxNo.value.trim().toUpperCase();
+      data.address = addr.value.trim();
+      data.phone = tel.value.trim();
+      data.bankAccount = bank.value.trim();
+      data.contactName = cName.value.trim();
+      data.contactPhone = cPhone.value.trim();
+      data.email = email.value.trim();
+    }
+    return data;
+  }
+
+  // 发票弹窗「下一步，去缴费」
+  function validateInvoiceAndNext() {
+    const data = validateAndCollectInvoice();
+    if (!data) { showToast('请检查红色提示项'); return; }
+    pendingInvoice = data;
+    closeModal('modal-invoice');
+    // 打开支付二维码弹窗（沿用原 openPay 的 pay-work 显示）
+    const a = getArchives()[payIdx];
+    if (!a) return;
+    document.getElementById('pay-work').textContent = (a.workType || '') + ' · 证书编号 ' + (a.certNo || '—');
+    document.getElementById('modal-pay').classList.add('show');
+  }
+
+  function confirmPaid() {
+    if (payIdx < 0) return;
+    const list = getArchives();
+    const now = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    list[payIdx].paid = true;
+    list[payIdx].paidAt = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    if (pendingInvoice) list[payIdx].invoice = pendingInvoice; // 写入发票数据
+    pendingInvoice = null;
+    saveArchives(list);
+    closeModal('modal-pay');
+    render();
+    renderCourses();
+    showToast('缴费成功，已解锁该工种的视频学习入口');
+    payIdx = -1;
+  }
+
+  function startLearn(idx) {
+    const a = getArchives()[idx];
+    if (!a) return;
+    if (!(a.status === 'approved' && a.paid)) { showToast('该报名尚未完成缴费，暂不可学习'); return; }
+    const courseId = WORK_TYPE_COURSE[a.workType] || 'c2';
+    window.location.href = '课程播放.html?courseId=' + courseId + '&archiveId=' + encodeURIComponent(a.id);
+  }
+
+  function goExam() { window.location.href = '我的考试.html'; }
+
+  function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+  document.getElementById('modal-invoice').addEventListener('click', e => { if (e.target.id === 'modal-invoice') closeModal('modal-invoice'); });
+  document.getElementById('modal-pay').addEventListener('click', e => {
+    if (e.target.id === 'modal-pay') closeModal('modal-pay');
+  });
+  document.getElementById('modal-safety-cert').addEventListener('click', e => {
+    if (e.target.id === 'modal-safety-cert') closeModal('modal-safety-cert');
+  });
+
+  // ========== 安全生产教育培训证书预览 ==========
+  let _currentCertInfo = null;
+  function previewSafetyCert(archiveId, workType, certNo) {
+    const hoursKey = 'study_hours_' + archiveId;
+    let totalHours = 21;
+    try {
+      const d = JSON.parse(sessionStorage.getItem(hoursKey) || 'null');
+      if (d && d.totalHours) totalHours = Math.round(d.totalHours);
+    } catch(e) {}
+    const now = new Date();
+    const finishDate = now.toISOString().slice(0, 10);
+    const certCode = 'SC' + String(archiveId || '').replace('REG', '');
+    const userName = (getCurrentUser() && getCurrentUser().name) || '张三';
+    const idCard = ((getCurrentUser() && getCurrentUser().idCard) || '110101199001011234');
+    const idCardMasked = idCard.length >= 10
+      ? idCard.substring(0, 3) + '***********' + idCard.substring(idCard.length - 4)
+      : idCard;
+    // 依据身份证第 17 位（奇男偶女）推算性别，演示兜底为「男」
+    const gender = idCard.length >= 17
+      ? (parseInt(idCard.charAt(16), 10) % 2 === 1 ? '男' : '女')
+      : '男';
+    _currentCertInfo = { certCode, workType, certNo, userName, idCardMasked, totalHours, finishDate };
+    const html = `
+      <div class="safety-cert">
+        <div class="safety-cert-title">安全生产教育培训证书</div>
+        <div class="safety-cert-sub">CERTIFICATE OF SAFETY PRODUCTION TRAINING & EDUCATION</div>
+        <div class="safety-cert-body">
+          <div><span class="label">证书编号：</span><span class="val cert-no">${certCode}</span></div>
+          <div><span class="label">学员姓名：</span><span class="val">${userName}</span></div>
+          <div><span class="label">性别：</span><span class="val">${gender}</span></div>
+          <div><span class="label">证件号码：</span><span class="val">${idCardMasked}</span></div>
+          <div><span class="label">作业工种：</span><span class="val">${workType}</span></div>
+          <div><span class="label">学时完成：</span><span class="val">累计完成 ${totalHours} 学时</span></div>
+          <div><span class="label">发证日期：</span><span class="val">${finishDate}</span></div>
+          <div style="margin-top:14px;font-size:13px;color:#595959;line-height:1.8;">
+            该学员已完成规定的安全生产教育培训并达到 21 学时要求，特此发证。
+            <br>本证书作为参加后续相关工种考试的必要凭证。
+          </div>
+        </div>
+      </div>
+    `;
+    document.getElementById('safety-cert-body').innerHTML = html;
+    document.getElementById('modal-safety-cert').classList.add('show');
+  }
+  function downloadCurrentCert() {
+    if (!_currentCertInfo) { showToast('未找到证书数据'); return; }
+    showToast('正在下载 ' + _currentCertInfo.certCode + '.pdf ...');
+    setTimeout(() => showToast('证书 PDF 下载完成（模拟）'), 1200);
+  }
+
+  let toastTimer = null;
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
+  }
+
+  document.getElementById('filter-worktype').addEventListener('change', e => { currentWorktype = e.target.value; render(); });
+  document.getElementById('filter-status').addEventListener('change', e => { currentStatus = e.target.value; render(); });
+  document.getElementById('search-input').addEventListener('input', e => { currentKeyword = e.target.value.trim(); render(); });
+
+  // ========== 课程学习进度（保留原有功能，与 completed_courses 联动） ==========
+  function getCompletedCourses() {
+    try { return JSON.parse(sessionStorage.getItem('completed_courses') || '[]'); } catch(e) { return []; }
+  }
+  // 已缴费解锁的课程集合：仅「审核通过 + 已缴费」的报名解锁其对应工种课程
+  function unlockedCourseMap() {
+    const map = {};
+    getArchives().forEach(a => {
+      if (a.status === 'approved' && a.paid) {
+        const cid = WORK_TYPE_COURSE[a.workType];
+        if (cid) map[cid] = true;
+      }
+    });
+    return map;
+  }
+
+  const COURSES = [
+    { id: 'c1', name: '安全生产法律法规', workType: '低压电工作业', total: 8 },
+    { id: 'c2', name: '低压电工安全技术', workType: '低压电工作业', total: 16 },
+    { id: 'c3', name: '电气防火防爆',     workType: '低压电工作业', total: 6 },
+    { id: 'c4', name: '应急救护知识',     workType: '低压电工作业', total: 4 }
+  ];
+  const COURSE_STATUS = {
+    notstart: { cls: 'tag-notstart', text: '未开始' },
+    learning: { cls: 'tag-info',     text: '学习中' },
+    done:     { cls: 'tag-done',     text: '已完成' }
+  };
+  let cWorktype = '';
+  let cFilterStatus = '';
+  let cKeyword = '';
+  let cPage = 1;
+  const cPageSize = 10;
+
+  function buildCourses() {
+    const completed = getCompletedCourses();
+    return COURSES.map(c => {
+      const done = completed.includes(c.id) ? c.total : 0;
+      let status = 'notstart';
+      if (done >= c.total) status = 'done';
+      else if (done > 0) status = 'learning';
+      return Object.assign({}, c, { done, status });
+    });
+  }
+
+  function getFilteredCourses() {
+    return buildCourses().filter(c => {
+      const okW = !cWorktype || c.workType === cWorktype;
+      const okS = !cFilterStatus || c.status === cFilterStatus;
+      const okK = !cKeyword || c.name.includes(cKeyword);
+      return okW && okS && okK;
+    });
+  }
+
+  function renderCourses() {
+    const list = getFilteredCourses();
+    const tbody = document.getElementById('course-progress-tbody');
+    const unlocked = unlockedCourseMap();
+    if (list.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" class="empty">暂无符合条件的课程</td></tr>';
+      document.getElementById('course-pagination').innerHTML = '';
+      return;
+    }
+    tbody.innerHTML = list.map(c => {
+      const pct = c.total ? Math.round(c.done / c.total * 100) : 0;
+      const st = COURSE_STATUS[c.status];
+      const btn = `<button class="btn btn-primary" onclick="learnCourse('${c.id}')">去学习</button>`;
+      return `<tr>
+        <td>${c.name}</td>
+        <td>${c.workType}</td>
+        <td>${c.total} 课时</td>
+        <td>${c.done} 课时</td>
+        <td><div class="progress-cell"><div class="progress-mini"><div class="progress-mini-bar ${c.status==='done'?'done':''}" style="width:${pct}%"></div></div><span>${pct}%</span></div></td>
+        <td><span class="tag ${st.cls}">${st.text}</span></td>
+        <td>${btn}</td>
+      </tr>`;
+    }).join('');
+    renderCoursePagination(list.length);
+  }
+
+  function renderCoursePagination(total) {
+    const pages = Math.max(1, Math.ceil(total / cPageSize));
+    if (cPage > pages) cPage = pages;
+    let html = `<span class="page-info">共 ${total} 条</span>`;
+    html += `<button class="page-btn" onclick="goCoursePage(${cPage - 1})" ${cPage <= 1 ? 'disabled' : ''}>上一页</button>`;
+    for (let i = 1; i <= pages; i++) html += `<button class="page-btn ${i === cPage ? 'active' : ''}" onclick="goCoursePage(${i})">${i}</button>`;
+    html += `<button class="page-btn" onclick="goCoursePage(${cPage + 1})" ${cPage >= pages ? 'disabled' : ''}>下一页</button>`;
+    document.getElementById('course-pagination').innerHTML = html;
+  }
+  function goCoursePage(p) {
+    const total = getFilteredCourses().length;
+    const pages = Math.max(1, Math.ceil(total / cPageSize));
+    if (p < 1 || p > pages) return;
+    cPage = p; renderCourses();
+  }
+  function learnCourse(id) {
+    window.location.href = '课程播放.html?courseId=' + id;
+  }
+  document.getElementById('c-filter-worktype').addEventListener('change', e => { cWorktype = e.target.value; cPage = 1; renderCourses(); });
+  document.getElementById('c-filter-status').addEventListener('change', e => { cFilterStatus = e.target.value; cPage = 1; renderCourses(); });
+  document.getElementById('c-search-input').addEventListener('input', e => { cKeyword = e.target.value.trim(); cPage = 1; renderCourses(); });
+
+  // ========== 资质状态锁定菜单 ==========
+  (function() {
+    const status = sessionStorage.getItem('qual_status') || 'approved';
+    if (status !== 'approved') {
+      const tip = status === 'pending' ? '报名信息待审核，暂不可访问该模块'
+        : (status === 'rejected' ? '报名信息审核未通过，请修改后重新提交' : '请先提交报名信息，审核通过后可访问该模块');
+      document.querySelectorAll('.menu-item[data-lock="1"]').forEach(item => {
+        item.classList.add('disabled');
+        item.setAttribute('href', 'javascript:void(0)');
+        item.addEventListener('click', e => { e.preventDefault(); alert(tip); });
+      });
+    }
+  })();
+
+  function logout() { sessionStorage.clear(); window.location.href = '登录.html'; }
+
+  render();
+  renderCourses();
+</script>
+</body>
+</html>

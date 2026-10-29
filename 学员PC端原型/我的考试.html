@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>我的考试 - 特殊工种延期教育系统</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif; background: #f0f2f5; color: #262626; min-height: 100vh; }
+  a { text-decoration: none; color: inherit; }
+
+  .topbar { position: fixed; top: 0; left: 0; right: 0; height: 60px; background: #fff; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; z-index: 100; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+  .brand { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 600; color: #1f1f1f; }
+  .brand .logo { width: 32px; height: 32px; border-radius: 8px; background: #1677ff; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .user { display: flex; align-items: center; gap: 16px; color: #595959; font-size: 14px; }
+  .user .avatar { width: 32px; height: 32px; border-radius: 50%; background: #e6f4ff; color: #1677ff; display: flex; align-items: center; justify-content: center; font-weight: 600; }
+  .user .divider { width: 1px; height: 16px; background: #e8e8e8; }
+  .logout { background: none; border: none; color: #8c8c8c; cursor: pointer; font-size: 14px; }
+  .logout:hover { color: #ff4d4f; }
+
+  .sidebar { position: fixed; top: 60px; left: 0; bottom: 0; width: 220px; background: #001529; color: rgba(255,255,255,0.75); padding: 12px 0; overflow-y: auto; z-index: 99; }
+  .menu-item { display: flex; align-items: center; gap: 12px; padding: 12px 24px; font-size: 14px; cursor: pointer; border-left: 3px solid transparent; transition: all 0.2s; }
+  .menu-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
+  .menu-item.active { background: #1677ff; color: #fff; border-left-color: #fff; }
+  .menu-item.disabled { color: rgba(255,255,255,0.3); cursor: not-allowed; }
+  .menu-item.disabled:hover { background: transparent; color: rgba(255,255,255,0.3); }
+  .menu-item .icon { font-size: 16px; width: 20px; text-align: center; }
+
+  .main { margin-left: 220px; margin-top: 60px; padding: 24px; min-height: calc(100vh - 60px); }
+  .page-title { font-size: 20px; font-weight: 600; margin-bottom: 16px; color: #1f1f1f; }
+
+  .filter-bar { background: #fff; border-radius: 10px; padding: 16px 20px; display: flex; align-items: center; gap: 12px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+  .filter-bar label { font-size: 14px; color: #595959; }
+  .filter-bar select { height: 36px; padding: 0 12px; border: 1px solid #d9d9d9; border-radius: 6px; font-size: 14px; outline: none; transition: all 0.2s; background: #fff; }
+  .filter-bar select:hover { border-color: #4096ff; }
+  .filter-bar select:focus { border-color: #1677ff; box-shadow: 0 0 0 2px rgba(22,119,255,0.12); }
+
+  .table-card { background: #fff; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; }
+  thead th { background: #fafafa; padding: 14px 16px; text-align: left; font-size: 13px; font-weight: 600; color: #595959; border-bottom: 1px solid #f0f0f0; }
+  tbody td { padding: 14px 16px; font-size: 14px; color: #262626; border-bottom: 1px solid #f5f5f5; }
+  tbody tr { transition: background 0.15s; }
+  tbody tr:hover { background: #f0f7ff; }
+  tbody tr:last-child td { border-bottom: none; }
+
+  .tag { display: inline-flex; align-items: center; padding: 2px 10px; border-radius: 4px; font-size: 12px; font-weight: 500; }
+  .tag-wait { background: #fff7e6; color: #d46b08; border: 1px solid #ffd591; }
+  .tag-pass { background: #f6ffed; color: #389e0d; border: 1px solid #b7eb8f; }
+  .tag-fail { background: #fff1f0; color: #cf1322; border: 1px solid #ffa39e; }
+
+  .btn { height: 34px; padding: 0 16px; border: none; border-radius: 6px; font-size: 13px; cursor: pointer; transition: all 0.2s; font-weight: 500; }
+  .btn-primary { background: #1677ff; color: #fff; }
+  .btn-primary:hover:not(:disabled) { background: #4096ff; }
+  .btn-primary:active:not(:disabled) { background: #0958d9; }
+  .btn-primary:disabled { background: #bfbfbf; cursor: not-allowed; }
+  .btn-default { background: #fff; color: #595959; border: 1px solid #d9d9d9; }
+  .btn-default:hover { color: #1677ff; border-color: #1677ff; }
+
+  .tip-inline { font-size: 12px; color: #8c8c8c; margin-top: 4px; }
+
+  .empty { text-align: center; padding: 60px 20px; color: #8c8c8c; font-size: 14px; }
+
+  .btn-link { background: none; border: none; color: #1677ff; cursor: pointer; font-size: 13px; padding: 0; }
+  .btn-link:hover { text-decoration: underline; }
+
+  /* 考试详情弹窗 */
+  .modal-wide { width: 640px; max-height: 85vh; display: flex; flex-direction: column; }
+  .modal-wide .modal-body { overflow-y: auto; }
+  .exam-summary { display: flex; gap: 24px; padding: 16px; background: #fafafa; border-radius: 8px; margin-bottom: 16px; }
+  .exam-summary .item { flex: 1; text-align: center; }
+  .exam-summary .val { font-size: 22px; font-weight: 700; color: #1f1f1f; }
+  .exam-summary .val.pass { color: #389e0d; }
+  .exam-summary .val.fail { color: #cf1322; }
+  .exam-summary .lbl { font-size: 12px; color: #8c8c8c; margin-top: 4px; }
+  .detail-title { font-size: 14px; font-weight: 600; color: #1f1f1f; margin-bottom: 12px; }
+  .q-item { padding: 12px 14px; border: 1px solid #f0f0f0; border-radius: 6px; margin-bottom: 10px; }
+  .q-item.correct { border-left: 3px solid #52c41a; }
+  .q-item.wrong { border-left: 3px solid #ff4d4f; }
+  .q-stem { font-size: 14px; color: #262626; margin-bottom: 8px; font-weight: 500; }
+  .q-row { font-size: 13px; color: #595959; line-height: 1.8; }
+  .q-row .label { color: #8c8c8c; display: inline-block; width: 64px; }
+  .q-row .ans { color: #262626; }
+  .q-row .user-ans.ok { color: #389e0d; }
+  .q-row .user-ans.no { color: #cf1322; }
+
+  /* 弹窗 */
+  .modal-mask { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 1000; align-items: center; justify-content: center; }
+  .modal-mask.show { display: flex; }
+  .modal { background: #fff; border-radius: 10px; width: 460px; max-width: 90vw; box-shadow: 0 12px 40px rgba(0,0,0,0.2); overflow: hidden; animation: pop 0.2s ease; }
+  @keyframes pop { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .modal-header { padding: 16px 20px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; justify-content: space-between; }
+  .modal-title { font-size: 16px; font-weight: 600; color: #1f1f1f; }
+  .modal-close { cursor: pointer; color: #8c8c8c; font-size: 20px; line-height: 1; background: none; border: none; }
+  .modal-close:hover { color: #262626; }
+  .modal-body { padding: 20px; }
+  .modal-body .tip { background: #e6f4ff; border: 1px solid #91caff; color: #0958d9; padding: 12px 14px; border-radius: 6px; font-size: 13px; line-height: 1.6; margin-bottom: 16px; }
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 20px; }
+  .info-grid .label { font-size: 13px; color: #8c8c8c; }
+  .info-grid .value { font-size: 14px; color: #262626; font-weight: 600; }
+  .modal-footer { padding: 12px 20px 20px; display: flex; justify-content: center; gap: 12px; }
+  .modal-footer .btn { width: 110px; height: 38px; }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><span class="logo">🛡️</span>特殊工种延期教育系统</div>
+  <div class="user">
+    <span class="avatar">张</span><span>学员：张三</span><span class="divider"></span>
+    <span>证件号：110***********1234</span><span class="divider"></span>
+    <button class="logout" onclick="logout()">退出登录</button>
+  </div>
+</header>
+<aside class="sidebar">
+  <a href="工作台.html" class="menu-item" style="display:none;"><span class="icon">🏠</span><span>首页工作台</span></a>
+  <a href="个人报名信息.html" class="menu-item"><span class="icon">📋</span><span>个人报名信息</span></a>
+  <a href="我的课程.html" class="menu-item" data-lock="1"><span class="icon">📚</span><span>我的课程</span></a>
+  <a href="缴费订单.html" class="menu-item"><span class="icon">💰</span><span>缴费订单</span></a>
+  <a href="我的考试.html" class="menu-item active" data-lock="1"><span class="icon">📝</span><span>我的考试</span></a>
+  <a href="继续教育档案.html" class="menu-item" style="display:none;"><span class="icon">📄</span><span>继续教育档案</span></a>
+  <a href="我的证书.html" class="menu-item" style="display:none;"><span class="icon">🎓</span><span>我的证书</span></a>
+  <a href="系统公告.html" class="menu-item" style="display:none;"><span class="icon">📢</span><span>系统公告</span></a>
+  <a href="帮助中心.html" class="menu-item" style="display:none;"><span class="icon">❓</span><span>帮助中心</span></a>
+</aside>
+<main class="main">
+  <div class="page-title">我的考试</div>
+
+  <div id="tip-bar" style="display:none;background:#fff7e6;border:1px solid #ffd591;color:#d46b08;padding:12px 16px;border-radius:8px;font-size:14px;margin-bottom:16px;">
+    <span id="tip-bar-text">您的资质信息尚未审核通过，暂无法参加考试。</span>
+    请前往 <a href="个人报名信息.html" style="color:#1677ff;text-decoration:underline;">个人报名信息</a> 提交审核。
+  </div>
+
+  <div id="exam-content">
+  <div class="filter-bar">
+    <label>考试状态：</label>
+    <select id="filter-status">
+      <option value="">全部</option>
+      <option value="wait">待考试</option>
+      <option value="pass">合格</option>
+      <option value="fail">不合格</option>
+    </select>
+  </div>
+
+  <div class="table-card">
+    <table>
+      <thead>
+        <tr>
+          <th>考试名称</th>
+          <th>对应工种</th>
+          <th>考试状态</th>
+          <th>考试分数</th>
+          <th>考试详情</th>
+          <th>剩余考试机会</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="exam-tbody"></tbody>
+    </table>
+  </div>
+  </div>
+</main>
+
+<!-- 进入考试确认弹窗 -->
+<div class="modal-mask" id="modal-confirm">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title">进入考试确认</span>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="tip">请仔细阅读以下考试信息，确认无误后进入考试。考试过程中请勿切换页面，系统将自动提交。</div>
+      <div class="info-grid">
+        <div><div class="label">考试名称</div><div class="value" id="m-name">-</div></div>
+        <div><div class="label">考试时长</div><div class="value">60 分钟</div></div>
+        <div><div class="label">总题量</div><div class="value">80 题</div></div>
+        <div><div class="label">考试机会</div><div class="value">2 次</div></div>
+        <div><div class="label">总分</div><div class="value">100 分</div></div>
+        <div><div class="label">合格线</div><div class="value">60 分</div></div>
+        <div><div class="label">题型</div><div class="value">单选/多选/判断</div></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeModal()">取消</button>
+      <button class="btn btn-primary" onclick="confirmEnter()">确定进入</button>
+    </div>
+  </div>
+</div>
+
+<!-- 试卷生成失败弹窗 -->
+<div class="modal-mask" id="modal-fail">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title">试卷生成失败</span>
+      <button class="modal-close" onclick="closeFailModal()">×</button>
+    </div>
+    <div class="modal-body" style="text-align:center;">
+      <div class="modal-icon" style="background:#fff1f0;color:#ff4d4f;width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 14px;">✕</div>
+      <p style="font-size:15px;line-height:1.6;">从基础题库随机抽取试题时发生异常，<br>试卷生成失败，请稍后重试。</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeFailModal()">取消</button>
+      <button class="btn btn-primary" onclick="retryGenerate()">重新生成</button>
+    </div>
+  </div>
+</div>
+
+<!-- 考试详情弹窗 -->
+<div class="modal-mask" id="modal-detail">
+  <div class="modal modal-wide" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title">考试详情</span>
+      <button class="modal-close" onclick="closeDetail()">×</button>
+    </div>
+    <div class="modal-body" id="detail-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="closeDetail()">关闭</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" style="position:fixed;top:80px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.78);color:#fff;padding:10px 20px;border-radius:6px;font-size:14px;z-index:2000;opacity:0;transition:opacity 0.3s;"></div>
+
+<script>
+  // ========== 资质状态锁定 ==========
+  function getQualStatus() {
+    const urlStatus = new URLSearchParams(location.search).get('status');
+    if (urlStatus) return urlStatus;
+    return sessionStorage.getItem('qual_status') || 'draft';
+  }
+  const qualStatus = getQualStatus();
+  let qualLocked = false;
+  if (qualStatus !== 'approved') {
+    qualLocked = true;
+    const tipBar = document.getElementById('tip-bar');
+    let tipText = '您尚未提交报名信息，暂无法参加考试。';
+    if (qualStatus === 'pending') tipText = '您的报名信息正在审核中，暂无法参加考试。';
+    else if (qualStatus === 'rejected') tipText = '您的报名信息审核未通过，暂无法参加考试。';
+    document.getElementById('tip-bar-text').textContent = tipText;
+    tipBar.style.display = 'block';
+    document.getElementById('exam-content').style.display = 'none';
+    const tip = qualStatus === 'pending' ? '报名信息待审核，暂不可访问该模块' : (qualStatus === 'rejected' ? '报名信息审核未通过，请修改后重新提交' : '请先提交报名信息，审核通过后可访问该模块');
+    document.querySelectorAll('.menu-item[data-lock="1"]').forEach(item => {
+      item.classList.add('disabled');
+      item.setAttribute('href', 'javascript:void(0)');
+      item.addEventListener('click', e => { e.preventDefault(); alert(tip); });
+    });
+  }
+
+  // ========== 共享状态 ==========
+  function getCompletedCourses() {
+    try { return JSON.parse(sessionStorage.getItem('completed_courses') || '[]'); } catch(e) { return []; }
+  }
+  function getExamRetries() {
+    try { return JSON.parse(sessionStorage.getItem('exam_retries') || '{}'); } catch(e) { return {}; }
+  }
+
+  // ========== 模拟考试数据 ==========
+  let exams = [
+    { id: 'e1', name: '2025年度继续教育考试', workType: '低压电工作业', valid: '2025-09-01 ~ 2025-12-31', status: 'wait', retries: 2, courseId: 'c2', score: null, timeUsed: null, details: null },
+    { id: 'e4', name: '2025年度继续教育考试（高处作业）', workType: '高处作业', valid: '2025-09-01 ~ 2025-12-31', status: 'wait', retries: 2, courseId: 'c4', score: null, timeUsed: null, details: null },
+    { id: 'e2', name: '2024年度继续教育补考', workType: '低压电工作业', valid: '2024-09-01 ~ 2024-12-31', status: 'fail', retries: 0, courseId: 'c1', score: 48, timeUsed: '86 分钟',
+      details: [
+        { q: '触电急救时，首先应采取的措施是：', a: '立即切断电源', ua: '直接用手拉开触电者', ok: false },
+        { q: '万用表测量电压时，应将表笔与被测电路：', a: '并联', ua: '串联', ok: false },
+        { q: '低压配电柜前操作通道的宽度应不小于：', a: '1.5 米', ua: '1.0 米', ok: false },
+        { q: '绝缘手套使用前应进行：', a: '充气检查有无漏气', ua: '外观检查即可', ok: true },
+        { q: '保护零线（PE 线）的颜色应为：', a: '黄绿双色', ua: '蓝色', ok: false }
+      ]
+    },
+    { id: 'e3', name: '2024年度继续教育考试', workType: '低压电工作业', valid: '2024-01-01 ~ 2024-03-31', status: 'pass', retries: 0, courseId: 'c1', score: 92, timeUsed: '58 分钟',
+      details: [
+        { q: '触电急救的八字方针是：', a: '迅速、就地、准确、坚持', ua: '—', ok: true },
+        { q: '万用表测量电阻前应进行：', a: '欧姆调零', ua: '机械调零', ok: true },
+        { q: '电气设备金属外壳应：', a: '可靠接地或接零', ua: '与零线相连', ok: true },
+        { q: '绝缘鞋的作用是：', a: '防止跨步电压', ua: '耐高压冲击', ok: true },
+        { q: '低压开关安装时，手柄向上为：', a: '合闸位置', ua: '分闸位置', ok: false }
+      ]
+    },
+  ];
+
+  // 同步重考次数
+  const retriesMap = getExamRetries();
+  exams.forEach(e => { if (retriesMap[e.id] !== undefined) e.retries = retriesMap[e.id]; });
+
+  // 同步最新考试结果到考试状态（含分数和用时）
+  try {
+    const result = JSON.parse(sessionStorage.getItem('exam_result') || 'null');
+    if (result) {
+      const exam = exams.find(e => e.id === result.examId);
+      if (exam) {
+        exam.status = result.passed ? 'pass' : 'fail';
+        exam.score = result.score;
+        exam.timeUsed = '自动计时';
+        exam.details = (exam.details || []).concat([
+          { q: '本次提交的模拟题 1', a: '正确答案 A', ua: result.passed ? '正确' : '错误选项 B', ok: result.passed },
+          { q: '本次提交的模拟题 2', a: '正确答案 C', ua: result.passed ? '正确' : '错误选项 D', ok: result.passed }
+        ]);
+      }
+    }
+  } catch(e) {}
+
+  const statusMap = {
+    wait: { cls: 'tag-wait', text: '待考试' },
+    pass: { cls: 'tag-pass', text: '合格' },
+    fail: { cls: 'tag-fail', text: '不合格' }
+  };
+
+  let currentStatus = '';
+  let currentExamId = null;
+
+  function render() {
+    const completed = getCompletedCourses();
+    const list = exams.filter(e => !currentStatus || e.status === currentStatus);
+    const tbody = document.getElementById('exam-tbody');
+    if (list.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" class="empty">暂无考试记录</td></tr>';
+      return;
+    }
+    tbody.innerHTML = list.map(e => {
+      const st = statusMap[e.status];
+      const courseDone = completed.includes(e.courseId);
+      let action = '';
+      if (e.status === 'pass') {
+        action = '<span style="color:#8c8c8c;font-size:13px;">已通过</span>';
+      } else if (e.retries <= 0) {
+        action = '<span style="color:#8c8c8c;font-size:13px;">重考次数已用尽，请重新报名缴费学习后参加考试或联系管理员</span>';
+      } else {
+        const disabled = !courseDone ? 'disabled' : '';
+        const tip = !courseDone ? '<div class="tip-inline">课程学时未完成21学时，暂不可考试</div>' : '';
+        action = `<button class="btn btn-primary" ${disabled} onclick="openConfirm('${e.id}')">进入考试</button>${tip}`;
+      }
+      // 考试分数列
+      let scoreCell = '—';
+      if (e.score != null) {
+        const scoreColor = e.score >= 60 ? '#389e0d' : '#cf1322';
+        scoreCell = `<span style="font-weight:600;color:${scoreColor};">${e.score} 分</span>`;
+      }
+      // 考试详情列
+      let detailCell = '—';
+      if (e.details && e.details.length) {
+        detailCell = `<button class="btn-link" onclick="openDetail('${e.id}')">查看详情</button>`;
+      }
+      return `<tr>
+        <td>${e.name}</td>
+        <td>${e.workType}</td>
+        <td><span class="tag ${st.cls}">${st.text}</span></td>
+        <td>${scoreCell}</td>
+        <td>${detailCell}</td>
+        <td>${e.retries} 次</td>
+        <td>${action}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  document.getElementById('filter-status').addEventListener('change', e => { currentStatus = e.target.value; render(); });
+
+  function openConfirm(id) {
+    const exam = exams.find(e => e.id === id);
+    if (!exam) return;
+    currentExamId = id;
+    document.getElementById('m-name').textContent = exam.name;
+    document.getElementById('modal-confirm').classList.add('show');
+  }
+  function closeModal() {
+    document.getElementById('modal-confirm').classList.remove('show');
+    currentExamId = null;
+  }
+  document.getElementById('modal-confirm').addEventListener('click', e => {
+    if (e.target.id === 'modal-confirm') closeModal();
+  });
+
+  function confirmEnter() {
+    closeModal();
+    generatePaper();
+  }
+  function generatePaper() {
+    showToast('正在从题库随机抽取 80 题生成试卷...');
+    setTimeout(() => {
+      // 模拟：约 20% 概率试卷生成失败
+      if (Math.random() < 0.2) {
+        document.getElementById('modal-fail').classList.add('show');
+      } else {
+        window.location.href = '在线考试.html?examId=' + currentExamId;
+      }
+    }, 800);
+  }
+  function retryGenerate() {
+    closeFailModal();
+    generatePaper();
+  }
+  function closeFailModal() {
+    document.getElementById('modal-fail').classList.remove('show');
+  }
+  document.getElementById('modal-fail').addEventListener('click', e => {
+    if (e.target.id === 'modal-fail') closeFailModal();
+  });
+
+  // ========== 考试详情弹窗 ==========
+  function openDetail(id) {
+    const exam = exams.find(e => e.id === id);
+    if (!exam || !exam.details) return;
+    const pass = exam.score >= 60;
+    const correctCount = exam.details.filter(d => d.ok).length;
+    const wrongCount = exam.details.length - correctCount;
+    const scoreCls = pass ? 'pass' : 'fail';
+    const summary = `
+      <div class="exam-summary">
+        <div class="item"><div class="val ${scoreCls}">${exam.score} 分</div><div class="lbl">总分 100 · 合格线 60</div></div>
+        <div class="item"><div class="val ${scoreCls}">${pass ? '合格' : '不合格'}</div><div class="lbl">考试结果</div></div>
+        <div class="item"><div class="val">${exam.timeUsed || '—'}</div><div class="lbl">用时</div></div>
+        <div class="item"><div class="val" style="color:#389e0d;">${correctCount}</div><div class="lbl">答对</div></div>
+        <div class="item"><div class="val" style="color:#cf1322;">${wrongCount}</div><div class="lbl">答错</div></div>
+      </div>
+      <div class="detail-title">答卷详情（共 ${exam.details.length} 题）</div>
+    `;
+    const questions = exam.details.map((d, i) => {
+      const cls = d.ok ? 'correct' : 'wrong';
+      const userCls = d.ok ? 'ok' : 'no';
+      const icon = d.ok ? '✓' : '✗';
+      return `
+        <div class="q-item ${cls}">
+          <div class="q-stem">${icon} 第 ${i+1} 题 · ${d.q}</div>
+          <div class="q-row"><span class="label">正确答案：</span><span class="ans">${d.a}</span></div>
+          <div class="q-row"><span class="label">您的答案：</span><span class="user-ans ${userCls}">${d.ua}${d.ok ? '（正确）' : '（错误）'}</span></div>
+        </div>
+      `;
+    }).join('');
+    document.getElementById('detail-body').innerHTML = summary + questions;
+    document.getElementById('modal-detail').classList.add('show');
+  }
+  function closeDetail() { document.getElementById('modal-detail').classList.remove('show'); }
+  document.getElementById('modal-detail').addEventListener('click', e => {
+    if (e.target.id === 'modal-detail') closeDetail();
+  });
+
+  let toastTimer = null;
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.style.opacity = '1';
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { t.style.opacity = '0'; }, 2000);
+  }
+
+  function logout() { sessionStorage.clear(); window.location.href = '登录.html'; }
+
+  // ========== 演示数据：预置「高处作业」课程已完成学习，使该条考试记录可直接进入在线考试 ==========
+  (function seedExamDemo() {
+    if (sessionStorage.getItem('exam_demo_seeded')) return;
+    sessionStorage.setItem('exam_demo_seeded', '1');
+    const cc = getCompletedCourses();
+    if (!cc.includes('c4')) {
+      cc.push('c4');
+      sessionStorage.setItem('completed_courses', JSON.stringify(cc));
+    }
+  })();
+
+  render();
+</script>
+</body>
+</html>

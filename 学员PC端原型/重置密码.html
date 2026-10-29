@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>重置密码 - 特殊工种延期教育系统</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+    color: #262626;
+    background: #f0f2f5;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .reset-card {
+    width: 100%;
+    max-width: 440px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.08);
+    padding: 40px 36px;
+  }
+  .card-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .card-head .back {
+    cursor: pointer;
+    color: #8c8c8c;
+    font-size: 20px;
+    background: none; border: none;
+    padding: 4px;
+    border-radius: 4px;
+  }
+  .card-head .back:hover { color: #1677ff; background: #f5f5f5; }
+  .card-head h1 {
+    font-size: 22px;
+    font-weight: 600;
+    color: #1f1f1f;
+  }
+  .card-desc { color: #8c8c8c; font-size: 14px; margin-bottom: 28px; padding-left: 34px; }
+
+  .form-item { margin-bottom: 20px; }
+  .form-item label {
+    display: block;
+    font-size: 14px;
+    color: #262626;
+    margin-bottom: 8px;
+  }
+  .required::before { content: "*"; color: #ff4d4f; margin-right: 4px; }
+  .input-wrap input {
+    width: 100%;
+    height: 42px;
+    padding: 0 12px;
+    border: 1px solid #d9d9d9;
+    border-radius: 6px;
+    font-size: 14px;
+    outline: none;
+    transition: all 0.2s;
+    background: #fff;
+  }
+  .input-wrap input:hover { border-color: #4096ff; }
+  .input-wrap input:focus { border-color: #1677ff; box-shadow: 0 0 0 2px rgba(22,119,255,0.12); }
+  .input-wrap.error input { border-color: #ff4d4f; }
+  .input-wrap.error input:focus { box-shadow: 0 0 0 2px rgba(255,77,79,0.12); }
+  .input-with-suffix { display: flex; gap: 8px; }
+  .input-with-suffix .input-wrap { flex: 1; }
+  .suffix-btn {
+    height: 42px;
+    padding: 0 14px;
+    border: 1px solid #d9d9d9;
+    background: #fafafa;
+    color: #262626;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+  .suffix-btn:hover:not(:disabled) { color: #1677ff; border-color: #1677ff; background: #e6f4ff; }
+  .suffix-btn:disabled { color: #bfbfbf; cursor: not-allowed; background: #f5f5f5; }
+  .error-text { color: #ff4d4f; font-size: 12px; margin-top: 6px; min-height: 16px; line-height: 16px; }
+  .success-text { color: #52c41a; font-size: 12px; margin-top: 6px; min-height: 16px; line-height: 16px; }
+
+  .btn {
+    width: 100%;
+    height: 44px;
+    border: none;
+    border-radius: 6px;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+    margin-top: 8px;
+  }
+  .btn-primary { background: #1677ff; color: #fff; }
+  .btn-primary:hover:not(:disabled) { background: #4096ff; }
+  .btn-primary:active:not(:disabled) { background: #0958d9; }
+  .btn-primary:disabled { background: #bfbfbf; cursor: not-allowed; color: #fff; }
+
+  .back-login {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 14px;
+  }
+  .link-btn { background: none; border: none; color: #1677ff; cursor: pointer; font-size: 14px; padding: 0; }
+  .link-btn:hover { text-decoration: underline; }
+
+  /* 弹窗 */
+  .modal-mask {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 1000;
+    align-items: center; justify-content: center;
+  }
+  .modal-mask.show { display: flex; }
+  .modal {
+    background: #fff;
+    border-radius: 10px;
+    width: 400px;
+    max-width: 90vw;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+    overflow: hidden;
+    animation: pop 0.2s ease;
+  }
+  @keyframes pop { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .modal-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .modal-title { font-size: 16px; font-weight: 600; color: #1f1f1f; }
+  .modal-close { cursor: pointer; color: #8c8c8c; font-size: 20px; line-height: 1; background: none; border: none; }
+  .modal-close:hover { color: #262626; }
+  .modal-body { padding: 24px 20px; }
+  .modal-icon {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: #f6ffed; color: #52c41a;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 30px; margin: 0 auto 14px;
+  }
+  .modal-body p { text-align: center; color: #262626; font-size: 15px; line-height: 1.6; }
+  .modal-body p small { color: #8c8c8c; font-size: 13px; display: block; margin-top: 6px; }
+  .modal-footer { padding: 12px 20px 20px; text-align: center; }
+  .modal-footer .btn { width: 120px; height: 38px; margin-top: 0; }
+
+  /* 底部固定咨询电话 */
+  .page-footer {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    height: 40px;
+    background: rgba(255,255,255,0.92);
+    border-top: 1px solid #f0f0f0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; color: #595959;
+    z-index: 50;
+    backdrop-filter: blur(6px);
+  }
+  .page-footer b { color: #1677ff; margin-left: 6px; }
+</style>
+</head>
+<body>
+<div class="reset-card">
+  <div class="card-head">
+    <button class="back" onclick="goLogin()" title="返回登录">‹</button>
+    <h1>重置登录密码</h1>
+  </div>
+  <p class="card-desc">请通过手机号验证后设置新密码</p>
+
+  <form id="form-reset" onsubmit="return false;">
+    <div class="form-item">
+      <label class="required">手机号</label>
+      <div class="input-wrap" id="wrap-phone">
+        <input type="text" id="phone" placeholder="请输入注册时绑定的手机号" maxlength="11" autocomplete="off">
+      </div>
+      <div class="error-text" id="err-phone"></div>
+    </div>
+
+    <div class="form-item">
+      <label class="required">验证码</label>
+      <div class="input-with-suffix">
+        <div class="input-wrap" id="wrap-code">
+          <input type="text" id="code" placeholder="请输入6位验证码" maxlength="6" autocomplete="off">
+        </div>
+        <button type="button" class="suffix-btn" id="btn-get-code">获取验证码</button>
+      </div>
+      <div class="error-text" id="err-code"></div>
+    </div>
+
+    <div class="form-item">
+      <label class="required">新密码</label>
+      <div class="input-wrap" id="wrap-newpwd">
+        <input type="password" id="newpwd" placeholder="请设置新密码（6-20位）" maxlength="20" autocomplete="off">
+      </div>
+      <div class="error-text" id="err-newpwd"></div>
+    </div>
+
+    <div class="form-item">
+      <label class="required">确认密码</label>
+      <div class="input-wrap" id="wrap-confirmpwd">
+        <input type="password" id="confirmpwd" placeholder="请再次输入新密码" maxlength="20" autocomplete="off">
+      </div>
+      <div class="error-text" id="err-confirmpwd"></div>
+    </div>
+
+    <button type="submit" class="btn btn-primary" id="btn-submit">提 交</button>
+
+    <div class="back-login">
+      想起密码了？<button type="button" class="link-btn" onclick="goLogin()">返回登录页</button>
+    </div>
+  </form>
+</div>
+
+<!-- 提交成功弹窗 -->
+<div class="modal-mask" id="modal-success">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title">操作成功</span>
+      <button class="modal-close" onclick="closeAndGo()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-icon">✓</div>
+      <p>密码重置成功！<small>页面将在 <b id="countdown">3</b> 秒后自动跳转至登录页</small></p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="closeAndGo()">立即返回登录</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const fields = ['phone','code','newpwd','confirmpwd'];
+  const wrapMap = { phone:'wrap-phone', code:'wrap-code', newpwd:'wrap-newpwd', confirmpwd:'wrap-confirmpwd' };
+  const errMap = { phone:'err-phone', code:'err-code', newpwd:'err-newpwd', confirmpwd:'err-confirmpwd' };
+
+  function setError(id, msg) {
+    document.getElementById(errMap[id]).textContent = msg;
+    document.getElementById(wrapMap[id]).classList.add('error');
+  }
+  function clearError(id) {
+    document.getElementById(errMap[id]).textContent = '';
+    document.getElementById(wrapMap[id]).classList.remove('error');
+  }
+
+  // 实时校验：新密码与确认密码一致性
+  document.getElementById('newpwd').addEventListener('input', () => {
+    clearError('newpwd');
+    checkConfirmMatch();
+  });
+  document.getElementById('confirmpwd').addEventListener('input', () => {
+    clearError('confirmpwd');
+    checkConfirmMatch();
+  });
+  function checkConfirmMatch() {
+    const np = document.getElementById('newpwd').value;
+    const cp = document.getElementById('confirmpwd').value;
+    if (cp && np !== cp) {
+      setError('confirmpwd', '两次输入的密码不一致');
+    } else {
+      clearError('confirmpwd');
+    }
+  }
+
+  // 输入时清除对应错误
+  document.getElementById('phone').addEventListener('input', () => clearError('phone'));
+  document.getElementById('code').addEventListener('input', () => clearError('code'));
+
+  // 新密码长度校验
+  document.getElementById('newpwd').addEventListener('blur', () => {
+    const v = document.getElementById('newpwd').value;
+    if (v && (v.length < 6 || v.length > 20)) {
+      setError('newpwd', '密码长度需为6-20位');
+    }
+  });
+
+  // 获取验证码
+  let countdown = 0, timer = null;
+  document.getElementById('btn-get-code').addEventListener('click', () => {
+    const phone = document.getElementById('phone').value.trim();
+    if (!phone) { setError('phone', '请输入手机号'); return; }
+    if (!/^1[3-9]\d{9}$/.test(phone)) { setError('phone', '请输入正确的11位手机号'); return; }
+    const btn = document.getElementById('btn-get-code');
+    btn.disabled = true;
+    countdown = 60;
+    btn.textContent = countdown + 's 后重发';
+    timer = setInterval(() => {
+      countdown--;
+      if (countdown <= 0) {
+        clearInterval(timer);
+        btn.disabled = false;
+        btn.textContent = '获取验证码';
+      } else {
+        btn.textContent = countdown + 's 后重发';
+      }
+    }, 1000);
+    alert('验证码已发送（演示验证码：123456）');
+  });
+
+  // 提交
+  document.getElementById('form-reset').addEventListener('submit', doSubmit);
+  document.getElementById('btn-submit').addEventListener('click', doSubmit);
+  function doSubmit() {
+    const phone = document.getElementById('phone').value.trim();
+    const code = document.getElementById('code').value.trim();
+    const newpwd = document.getElementById('newpwd').value;
+    const confirmpwd = document.getElementById('confirmpwd').value;
+    let ok = true;
+
+    if (!phone) { setError('phone', '请输入手机号'); ok = false; }
+    else if (!/^1[3-9]\d{9}$/.test(phone)) { setError('phone', '请输入正确的11位手机号'); ok = false; }
+
+    if (!code) { setError('code', '请输入验证码'); ok = false; }
+
+    if (!newpwd) { setError('newpwd', '请设置新密码'); ok = false; }
+    else if (newpwd.length < 6 || newpwd.length > 20) { setError('newpwd', '密码长度需为6-20位'); ok = false; }
+
+    if (!confirmpwd) { setError('confirmpwd', '请再次输入新密码'); ok = false; }
+    else if (newpwd !== confirmpwd) { setError('confirmpwd', '两次输入的密码不一致'); ok = false; }
+
+    if (!ok) return;
+
+    // 模拟提交成功
+    showSuccess();
+  }
+
+  function showSuccess() {
+    document.getElementById('modal-success').classList.add('show');
+    let n = 3;
+    const cd = document.getElementById('countdown');
+    cd.textContent = n;
+    const t = setInterval(() => {
+      n--;
+      cd.textContent = n;
+      if (n <= 0) {
+        clearInterval(t);
+        goLogin();
+      }
+    }, 1000);
+  }
+
+  function closeAndGo() {
+    document.getElementById('modal-success').classList.remove('show');
+    goLogin();
+  }
+
+  // 点击遮罩关闭（成功弹窗关闭后也跳转）
+  document.getElementById('modal-success').addEventListener('click', (e) => {
+    if (e.target.id === 'modal-success') closeAndGo();
+  });
+
+  function goLogin() {
+    window.location.href = '登录.html';
+  }
+</script>
+
+<!-- 底部咨询电话 -->
+<div class="page-footer">特殊工种延期教育系统咨询电话：<b>0530-5169991</b></div>
+</body>
+</html>

@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>学员登录 - 特殊工种延期教育系统</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+    color: #262626;
+    background: #f0f2f5;
+    min-height: 100vh;
+  }
+  .page { display: flex; min-height: 100vh; }
+
+  /* 左侧宣传 Banner */
+  .banner {
+    flex: 1.1;
+    background: linear-gradient(135deg, #1677ff 0%, #0958d9 55%, #003a8c 100%);
+    color: #fff;
+    padding: 64px 56px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+  }
+  .banner::after {
+    content: "";
+    position: absolute;
+    right: -120px;
+    bottom: -120px;
+    width: 420px;
+    height: 420px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+  }
+  .banner-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 20px;
+    font-weight: 600;
+    position: relative;
+    z-index: 1;
+  }
+  .banner-logo .logo-mark {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.18);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+  }
+  .banner-content { position: relative; z-index: 1; }
+  .banner-title { font-size: 40px; font-weight: 700; line-height: 1.3; margin-bottom: 18px; }
+  .banner-sub { font-size: 16px; line-height: 1.8; opacity: 0.92; max-width: 460px; }
+  .banner-features { margin-top: 40px; display: flex; flex-direction: column; gap: 16px; }
+  .banner-feature {
+    display: flex; align-items: center; gap: 12px;
+    background: rgba(255,255,255,0.12);
+    padding: 14px 18px;
+    border-radius: 8px;
+    max-width: 420px;
+    backdrop-filter: blur(4px);
+  }
+  .banner-feature .icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: rgba(255,255,255,0.22);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+  }
+  .banner-footer { position: relative; z-index: 1; font-size: 13px; opacity: 0.75; }
+
+  /* 右侧登录卡片 */
+  .login-side {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+  }
+  .login-card {
+    width: 100%;
+    max-width: 420px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.08);
+    padding: 40px 36px;
+  }
+  .login-card h1 {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #1f1f1f;
+  }
+  .login-card .card-desc { color: #8c8c8c; font-size: 14px; margin-bottom: 28px; }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    border-bottom: 1px solid #f0f0f0;
+    margin-bottom: 28px;
+  }
+  .tab {
+    flex: 1;
+    text-align: center;
+    padding: 12px 0;
+    font-size: 15px;
+    color: #595959;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    user-select: none;
+  }
+  .tab:hover { color: #1677ff; }
+  .tab.active {
+    color: #1677ff;
+    border-bottom-color: #1677ff;
+    font-weight: 600;
+  }
+
+  /* Form */
+  .form-item { margin-bottom: 18px; }
+  .form-item label {
+    display: block;
+    font-size: 14px;
+    color: #262626;
+    margin-bottom: 8px;
+  }
+  .required::before {
+    content: "*";
+    color: #ff4d4f;
+    margin-right: 4px;
+  }
+  .input-wrap { position: relative; }
+  .input-wrap input, .input-wrap select {
+    width: 100%;
+    height: 42px;
+    padding: 0 12px;
+    border: 1px solid #d9d9d9;
+    border-radius: 6px;
+    font-size: 14px;
+    outline: none;
+    transition: all 0.2s;
+    background: #fff;
+  }
+  .input-wrap select { cursor: pointer; }
+  .input-wrap input:hover, .input-wrap select:hover { border-color: #4096ff; }
+  .input-wrap input:focus, .input-wrap select:focus { border-color: #1677ff; box-shadow: 0 0 0 2px rgba(22,119,255,0.12); }
+  .input-wrap.error input, .input-wrap.error select { border-color: #ff4d4f; }
+  .input-wrap.error input:focus, .input-wrap.error select:focus { box-shadow: 0 0 0 2px rgba(255,77,79,0.12); }
+  .pwd-toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #8c8c8c;
+    font-size: 14px;
+    user-select: none;
+    background: none; border: none;
+  }
+  .pwd-toggle:hover { color: #1677ff; }
+  .error-text {
+    color: #ff4d4f;
+    font-size: 12px;
+    margin-top: 6px;
+    min-height: 16px;
+    line-height: 16px;
+  }
+
+  /* 协议勾选 */
+  .agreement {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #595959;
+    margin-bottom: 20px;
+    user-select: none;
+  }
+  .agreement input[type="checkbox"] {
+    width: 16px; height: 16px;
+    accent-color: #1677ff;
+    cursor: pointer;
+  }
+  .agreement a { color: #1677ff; text-decoration: none; }
+  .agreement a:hover { text-decoration: underline; }
+
+  /* 按钮 */
+  .btn {
+    width: 100%;
+    height: 44px;
+    border: none;
+    border-radius: 6px;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+  }
+  .btn-primary { background: #1677ff; color: #fff; }
+  .btn-primary:hover:not(:disabled) { background: #4096ff; }
+  .btn-primary:active:not(:disabled) { background: #0958d9; }
+  .btn-primary:disabled { background: #bfbfbf; cursor: not-allowed; color: #fff; }
+
+  .form-footer {
+    margin-top: 16px;
+    text-align: right;
+  }
+  .link-btn {
+    background: none; border: none;
+    color: #1677ff; cursor: pointer;
+    font-size: 14px; padding: 0;
+  }
+  .link-btn:hover { text-decoration: underline; }
+
+  .tip-box {
+    margin-top: 18px;
+    background: #f6ffed;
+    border: 1px solid #b7eb8f;
+    color: #389e0d;
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  /* 底部固定咨询电话 */
+  .page-footer {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    height: 40px;
+    background: rgba(255,255,255,0.92);
+    border-top: 1px solid #f0f0f0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; color: #595959;
+    z-index: 50;
+    backdrop-filter: blur(6px);
+  }
+  .page-footer b { color: #1677ff; margin-left: 6px; }
+
+  /* 弹窗 */
+  .modal-mask {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-mask.show { display: flex; }
+  .modal {
+    background: #fff;
+    border-radius: 10px;
+    width: 400px;
+    max-width: 90vw;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+    overflow: hidden;
+    animation: pop 0.2s ease;
+  }
+  @keyframes pop {
+    from { transform: scale(0.92); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .modal-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .modal-title { font-size: 16px; font-weight: 600; color: #1f1f1f; }
+  .modal-close {
+    cursor: pointer; color: #8c8c8c;
+    font-size: 20px; line-height: 1;
+    background: none; border: none;
+  }
+  .modal-close:hover { color: #262626; }
+  .modal-body { padding: 24px 20px; }
+  .modal-body .modal-icon {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: #fff1f0; color: #ff4d4f;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; margin: 0 auto 14px;
+  }
+  .modal-body .modal-icon.success { background: #f6ffed; color: #52c41a; }
+  .modal-body p { text-align: center; color: #262626; font-size: 15px; line-height: 1.6; }
+  .modal-footer {
+    padding: 12px 20px 20px;
+    text-align: center;
+  }
+  .modal-footer .btn { width: 120px; height: 38px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <!-- 左侧 Banner -->
+  <aside class="banner">
+    <div class="banner-logo">
+      <span class="logo-mark">🛡️</span>
+      <span>特殊工种延期教育系统</span>
+    </div>
+    <div class="banner-content">
+      <div class="banner-title">特种作业人员<br>延期继续教育平台</div>
+      <div class="banner-sub">面向特殊工种从业人员，提供线上课程学习、在线考试、电子档案凭证生成等一站式服务，助力特种作业证书延期复审。</div>
+      <div class="banner-features">
+        <div class="banner-feature"><span class="icon">📚</span><span>线上课程学习，随时随地完成继续教育</span></div>
+        <div class="banner-feature"><span class="icon">📝</span><span>随机抽题组卷，在线考试自动判分</span></div>
+        <div class="banner-feature" style="display:none;"><span class="icon">📄</span><span>考试合格生成继续教育电子档案凭证</span></div>
+      </div>
+    </div>
+    <div class="banner-footer">© 2026 特殊工种延期教育系统 · 学员端</div>
+  </aside>
+
+  <!-- 右侧登录/注册 -->
+  <main class="login-side">
+    <div class="login-card">
+      <h1 id="card-title">学员登录</h1>
+      <p class="card-desc" id="card-desc">请使用您的账号登录系统完成继续教育</p>
+
+      <div class="tabs">
+        <div class="tab active" data-tab="login">账号密码登录</div>
+        <div class="tab" data-tab="register">个人注册</div>
+      </div>
+
+      <!-- 账号密码登录 -->
+      <form id="form-login" onsubmit="return false;">
+        <div class="form-item">
+          <label class="required">账号</label>
+          <div class="input-wrap" id="wrap-account">
+            <input type="text" id="account" placeholder="请输入账号" autocomplete="off">
+          </div>
+          <div class="error-text" id="err-account"></div>
+        </div>
+        <div class="form-item">
+          <label class="required">密码</label>
+          <div class="input-wrap" id="wrap-pwd">
+            <input type="password" id="password" placeholder="请输入密码" autocomplete="off">
+            <button type="button" class="pwd-toggle" id="toggle-pwd" onclick="togglePwd('password','toggle-pwd')">显示</button>
+          </div>
+          <div class="error-text" id="err-pwd"></div>
+        </div>
+
+        <div class="agreement">
+          <input type="checkbox" id="agree-pwd">
+          <label for="agree-pwd">我已阅读并同意<a href="javascript:void(0)" onclick="alert('《用户协议》内容（演示）')">《用户协议》</a>和<a href="javascript:void(0)" onclick="alert('《隐私政策》内容（演示）')">《隐私政策》</a></label>
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="btn-login" disabled>登 录</button>
+        <div class="form-footer">
+          <button type="button" class="link-btn" onclick="goReset()">忘记密码？</button>
+        </div>
+      </form>
+
+      <!-- 个人注册 -->
+      <form id="form-register" onsubmit="return false;" style="display:none;">
+        <div class="form-item">
+          <label class="required">姓名</label>
+          <div class="input-wrap" id="wrap-r-name">
+            <input type="text" id="r-name" placeholder="请填写真实姓名" autocomplete="off">
+          </div>
+          <div class="error-text" id="err-r-name"></div>
+        </div>
+        <div class="form-item">
+          <label class="required">性别</label>
+          <div class="input-wrap" id="wrap-r-gender">
+            <select id="r-gender">
+              <option value="">请选择性别</option>
+              <option value="男">男</option>
+              <option value="女">女</option>
+            </select>
+          </div>
+          <div class="error-text" id="err-r-gender"></div>
+        </div>
+        <div class="form-item">
+          <label class="required">身份证号</label>
+          <div class="input-wrap" id="wrap-r-idcard">
+            <input type="text" id="r-idcard" placeholder="请输入18位身份证号" maxlength="18" autocomplete="off">
+          </div>
+          <div class="error-text" id="err-r-idcard"></div>
+        </div>
+        <div class="form-item">
+          <label class="required">手机号</label>
+          <div class="input-wrap" id="wrap-r-phone">
+            <input type="text" id="r-phone" placeholder="请输入11位手机号" maxlength="11" autocomplete="off">
+          </div>
+          <div class="error-text" id="err-r-phone"></div>
+        </div>
+        <div class="form-item">
+          <label class="required">账号</label>
+          <div class="input-wrap" id="wrap-r-account">
+            <input type="text" id="r-account" placeholder="设置您的登录账号" autocomplete="off">
+          </div>
+          <div class="error-text" id="err-r-account"></div>
+        </div>
+        <div class="form-item">
+          <label class="required">密码</label>
+          <div class="input-wrap" id="wrap-r-pwd">
+            <input type="password" id="r-pwd" placeholder="请设置密码（6-20位）" maxlength="20" autocomplete="off">
+            <button type="button" class="pwd-toggle" id="toggle-r-pwd" onclick="togglePwd('r-pwd','toggle-r-pwd')">显示</button>
+          </div>
+          <div class="error-text" id="err-r-pwd"></div>
+        </div>
+        <div class="form-item">
+          <label class="required">确认密码</label>
+          <div class="input-wrap" id="wrap-r-pwd2">
+            <input type="password" id="r-pwd2" placeholder="请再次输入密码" maxlength="20" autocomplete="off">
+            <button type="button" class="pwd-toggle" id="toggle-r-pwd2" onclick="togglePwd('r-pwd2','toggle-r-pwd2')">显示</button>
+          </div>
+          <div class="error-text" id="err-r-pwd2"></div>
+        </div>
+
+        <div class="agreement">
+          <input type="checkbox" id="agree-reg">
+          <label for="agree-reg">我已阅读并同意<a href="javascript:void(0)" onclick="alert('《用户协议》内容（演示）')">《用户协议》</a>和<a href="javascript:void(0)" onclick="alert('《隐私政策》内容（演示）')">《隐私政策》</a></label>
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="btn-register" disabled>注 册</button>
+      </form>
+
+      <div class="tip-box" id="tip-box">
+        演示账号：<b>admin</b> / 密码：<b>123456</b><br>
+        也可使用个人注册 Tab 自行注册账号
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- 底部咨询电话 -->
+<div class="page-footer">特殊工种延期教育系统咨询电话：<b>0530-5169991</b></div>
+
+<!-- 提示弹窗 -->
+<div class="modal-mask" id="modal-tip">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title" id="tip-modal-title">提示</span>
+      <button class="modal-close" onclick="closeModal('modal-tip')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-icon" id="tip-modal-icon">!</div>
+      <p id="tip-modal-msg"></p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="closeModal('modal-tip')">我知道了</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ========== 模拟数据 ==========
+  // 默认演示账号
+  const defaultUsers = {
+    "admin": { password: "123456", name: "张三", gender: "男", idCard: "110101199001011234", phone: "13800138000" }
+  };
+  function getRegisteredUsers() {
+    try { return JSON.parse(localStorage.getItem('reg_users') || '{}'); } catch(e) { return {}; }
+  }
+  function saveRegisteredUsers(users) {
+    localStorage.setItem('reg_users', JSON.stringify(users));
+  }
+  function getAllUsers() {
+    return Object.assign({}, defaultUsers, getRegisteredUsers());
+  }
+
+  // ========== Tab 切换 ==========
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const type = tab.dataset.tab;
+      document.getElementById('form-login').style.display = type === 'login' ? '' : 'none';
+      document.getElementById('form-register').style.display = type === 'register' ? '' : 'none';
+      const title = document.getElementById('card-title');
+      const desc = document.getElementById('card-desc');
+      if (type === 'login') {
+        title.textContent = '学员登录';
+        desc.textContent = '请使用您的账号登录系统完成继续教育';
+      } else {
+        title.textContent = '个人注册';
+        desc.textContent = '请填写真实信息完成注册，注册后可登录系统报名学习';
+      }
+    });
+  });
+
+  function switchToLogin() {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelector('.tab[data-tab="login"]').classList.add('active');
+    document.getElementById('form-login').style.display = '';
+    document.getElementById('form-register').style.display = 'none';
+    document.getElementById('card-title').textContent = '学员登录';
+    document.getElementById('card-desc').textContent = '请使用您的账号登录系统完成继续教育';
+  }
+
+  // ========== 密码显隐切换 ==========
+  function togglePwd(inputId, btnId) {
+    const input = document.getElementById(inputId);
+    const btn = document.getElementById(btnId);
+    if (input.type === 'password') {
+      input.type = 'text';
+      btn.textContent = '隐藏';
+    } else {
+      input.type = 'password';
+      btn.textContent = '显示';
+    }
+  }
+
+  // ========== 协议勾选控制按钮置灰 ==========
+  document.getElementById('agree-pwd').addEventListener('change', e => {
+    document.getElementById('btn-login').disabled = !e.target.checked;
+  });
+  document.getElementById('agree-reg').addEventListener('change', e => {
+    document.getElementById('btn-register').disabled = !e.target.checked;
+  });
+
+  // ========== 通用错误处理 ==========
+  function setError(id, msg) {
+    const map = {
+      account: ['err-account','wrap-account'],
+      password: ['err-pwd','wrap-pwd'],
+      'r-name': ['err-r-name','wrap-r-name'],
+      'r-gender': ['err-r-gender','wrap-r-gender'],
+      'r-idcard': ['err-r-idcard','wrap-r-idcard'],
+      'r-phone': ['err-r-phone','wrap-r-phone'],
+      'r-account': ['err-r-account','wrap-r-account'],
+      'r-pwd': ['err-r-pwd','wrap-r-pwd'],
+      'r-pwd2': ['err-r-pwd2','wrap-r-pwd2']
+    };
+    const [eid, wid] = map[id];
+    document.getElementById(eid).textContent = msg;
+    document.getElementById(wid).classList.add('error');
+  }
+  function clearError(id) {
+    const map = {
+      account: ['err-account','wrap-account'],
+      password: ['err-pwd','wrap-pwd'],
+      'r-name': ['err-r-name','wrap-r-name'],
+      'r-gender': ['err-r-gender','wrap-r-gender'],
+      'r-idcard': ['err-r-idcard','wrap-r-idcard'],
+      'r-phone': ['err-r-phone','wrap-r-phone'],
+      'r-account': ['err-r-account','wrap-r-account'],
+      'r-pwd': ['err-r-pwd','wrap-r-pwd'],
+      'r-pwd2': ['err-r-pwd2','wrap-r-pwd2']
+    };
+    const [eid, wid] = map[id];
+    document.getElementById(eid).textContent = '';
+    document.getElementById(wid).classList.remove('error');
+  }
+  ['account','password','r-name','r-gender','r-idcard','r-phone','r-account','r-pwd','r-pwd2'].forEach(id => {
+    document.getElementById(id).addEventListener('input', () => clearError(id));
+    document.getElementById(id).addEventListener('change', () => clearError(id));
+  });
+
+  // 注册时确认密码一致性实时校验
+  document.getElementById('r-pwd2').addEventListener('input', () => {
+    const p = document.getElementById('r-pwd').value;
+    const p2 = document.getElementById('r-pwd2').value;
+    if (p2 && p !== p2) setError('r-pwd2', '两次输入的密码不一致');
+    else clearError('r-pwd2');
+  });
+
+  // ========== 弹窗 ==========
+  function showTipModal(title, msg, isSuccess) {
+    document.getElementById('tip-modal-title').textContent = title;
+    document.getElementById('tip-modal-msg').textContent = msg;
+    const icon = document.getElementById('tip-modal-icon');
+    icon.className = 'modal-icon' + (isSuccess ? ' success' : '');
+    icon.textContent = isSuccess ? '✓' : '!';
+    document.getElementById('modal-tip').classList.add('show');
+  }
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('show');
+  }
+  document.getElementById('modal-tip').addEventListener('click', e => {
+    if (e.target.id === 'modal-tip') closeModal('modal-tip');
+  });
+
+  // ========== 登录逻辑 ==========
+  document.getElementById('form-login').addEventListener('submit', doLogin);
+  document.getElementById('btn-login').addEventListener('click', doLogin);
+  function doLogin() {
+    const account = document.getElementById('account').value.trim();
+    const password = document.getElementById('password').value.trim();
+    let ok = true;
+    if (!account) { setError('account', '请输入账号'); ok = false; }
+    if (!password) { setError('password', '请输入密码'); ok = false; }
+    if (!ok) return;
+
+    const users = getAllUsers();
+    const user = users[account];
+    if (!user) { showTipModal('登录失败', '账号不存在，请检查后重试', false); return; }
+    if (user.password !== password) { showTipModal('登录失败', '密码错误，请重新输入', false); return; }
+
+    // 保存当前登录用户基本信息到 sessionStorage，供个人报名信息页读取
+    sessionStorage.setItem('current_user', JSON.stringify({
+      account: account,
+      name: user.name,
+      gender: user.gender,
+      idCard: user.idCard,
+      phone: user.phone
+    }));
+    // 首次登录标记（用于首屏提醒弹窗）
+    sessionStorage.setItem('first_login', '1');
+    window.location.href = '我的课程.html';
+  }
+
+  // ========== 注册逻辑 ==========
+  document.getElementById('form-register').addEventListener('submit', doRegister);
+  document.getElementById('btn-register').addEventListener('click', doRegister);
+  function doRegister() {
+    const name = document.getElementById('r-name').value.trim();
+    const gender = document.getElementById('r-gender').value;
+    const idCard = document.getElementById('r-idcard').value.trim();
+    const phone = document.getElementById('r-phone').value.trim();
+    const account = document.getElementById('r-account').value.trim();
+    const pwd = document.getElementById('r-pwd').value;
+    const pwd2 = document.getElementById('r-pwd2').value;
+
+    let ok = true;
+    if (!name) { setError('r-name', '请填写真实姓名'); ok = false; }
+    if (!gender) { setError('r-gender', '请选择性别'); ok = false; }
+    if (!idCard) { setError('r-idcard', '请输入身份证号'); ok = false; }
+    else if (!/(^\d{15}$)|(^\d{17}([0-9]|X|x)$)/.test(idCard)) { setError('r-idcard', '身份证号格式不正确'); ok = false; }
+    if (!phone) { setError('r-phone', '请输入手机号'); ok = false; }
+    else if (!/^1[3-9]\d{9}$/.test(phone)) { setError('r-phone', '请输入正确的11位手机号'); ok = false; }
+    if (!account) { setError('r-account', '请设置登录账号'); ok = false; }
+    if (!pwd) { setError('r-pwd', '请设置密码'); ok = false; }
+    else if (pwd.length < 6 || pwd.length > 20) { setError('r-pwd', '密码长度需为6-20位'); ok = false; }
+    if (!pwd2) { setError('r-pwd2', '请再次输入密码'); ok = false; }
+    else if (pwd !== pwd2) { setError('r-pwd2', '两次输入的密码不一致'); ok = false; }
+    if (!ok) return;
+
+    // 账号唯一性校验
+    const users = getRegisteredUsers();
+    if (defaultUsers[account] || users[account]) {
+      setError('r-account', '该账号已被注册');
+      return;
+    }
+
+    // 保存注册信息
+    users[account] = { password: pwd, name: name, gender: gender, idCard: idCard, phone: phone };
+    saveRegisteredUsers(users);
+
+    // 注册成功弹窗
+    showTipModal('注册成功', '注册成功，请使用账号密码登录系统', true);
+    // 关闭弹窗后切换回登录 Tab
+    const closeBtn = document.querySelector('#modal-tip .modal-footer .btn');
+    const origOnclick = closeBtn.onclick;
+    closeBtn.onclick = () => {
+      closeModal('modal-tip');
+      switchToLogin();
+      // 预填账号
+      document.getElementById('account').value = account;
+      document.getElementById('password').value = '';
+    };
+    const mask = document.getElementById('modal-tip');
+    mask.onclick = (e) => {
+      if (e.target.id === 'modal-tip') {
+        closeModal('modal-tip');
+        switchToLogin();
+        document.getElementById('account').value = account;
+      }
+    };
+    document.querySelector('#modal-tip .modal-close').onclick = () => {
+      closeModal('modal-tip');
+      switchToLogin();
+      document.getElementById('account').value = account;
+    };
+  }
+
+  function goReset() {
+    window.location.href = '重置密码.html';
+  }
+</script>
+</body>
+</html>

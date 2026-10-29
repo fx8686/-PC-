@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>考试结果 - 特殊工种延期教育系统</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif; background: #f0f2f5; color: #262626; min-height: 100vh; }
+  a { text-decoration: none; color: inherit; }
+
+  /* 简易顶部导航 */
+  .topbar { height: 60px; background: #fff; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+  .brand { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 600; color: #1f1f1f; }
+  .brand .logo { width: 32px; height: 32px; border-radius: 8px; background: #1677ff; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .user { display: flex; align-items: center; gap: 16px; color: #595959; font-size: 14px; }
+  .user .avatar { width: 32px; height: 32px; border-radius: 50%; background: #e6f4ff; color: #1677ff; display: flex; align-items: center; justify-content: center; font-weight: 600; }
+  .logout { background: none; border: none; color: #8c8c8c; cursor: pointer; font-size: 14px; }
+  .logout:hover { color: #ff4d4f; }
+
+  .main { max-width: 760px; margin: 40px auto; padding: 0 20px; }
+
+  /* 成绩展示 */
+  .score-card {
+    background: #fff; border-radius: 12px; padding: 40px; text-align: center;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-bottom: 20px;
+  }
+  .status-icon {
+    width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 16px;
+    display: flex; align-items: center; justify-content: center; font-size: 44px;
+  }
+  .status-icon.pass { background: #f6ffed; color: #52c41a; }
+  .status-icon.fail { background: #fff1f0; color: #ff4d4f; }
+  .status-label { font-size: 14px; color: #8c8c8c; margin-bottom: 8px; }
+  .score-num { font-size: 56px; font-weight: 700; line-height: 1; margin-bottom: 6px; }
+  .score-num.pass { color: #52c41a; }
+  .score-num.fail { color: #ff4d4f; }
+  .score-unit { font-size: 20px; color: #8c8c8c; font-weight: 400; }
+  .pass-line { font-size: 14px; color: #8c8c8c; margin-top: 10px; }
+  .pass-line b { color: #595959; }
+
+  .tag { display: inline-flex; align-items: center; padding: 4px 16px; border-radius: 16px; font-size: 14px; font-weight: 600; margin-top: 12px; }
+  .tag-pass { background: #f6ffed; color: #389e0d; border: 1px solid #b7eb8f; }
+  .tag-fail { background: #fff1f0; color: #cf1322; border: 1px solid #ffa39e; }
+
+  /* 答题统计 */
+  .stat-card { background: #fff; border-radius: 12px; padding: 28px 40px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-bottom: 24px; }
+  .stat-card h3 { font-size: 16px; color: #1f1f1f; margin-bottom: 18px; }
+  .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .stat-item { text-align: center; padding: 16px; border-radius: 10px; background: #fafafa; }
+  .stat-item .num { font-size: 28px; font-weight: 700; }
+  .stat-item .num.correct { color: #52c41a; }
+  .stat-item .num.wrong { color: #ff4d4f; }
+  .stat-item .num.total { color: #1677ff; }
+  .stat-item .num.score { color: #722ed1; }
+  .stat-item .lbl { font-size: 13px; color: #8c8c8c; margin-top: 6px; }
+
+  /* 操作按钮 */
+  .actions { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+  .btn { height: 42px; padding: 0 26px; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; transition: all 0.2s; font-weight: 500; }
+  .btn-primary { background: #1677ff; color: #fff; }
+  .btn-primary:hover { background: #4096ff; }
+  .btn-default { background: #fff; color: #595959; border: 1px solid #d9d9d9; }
+  .btn-default:hover { color: #1677ff; border-color: #1677ff; }
+  .btn-warn { background: #fa8c16; color: #fff; }
+  .btn-warn:hover { background: #ffa940; }
+
+  .retry-tip { text-align: center; color: #8c8c8c; font-size: 13px; margin-top: 16px; }
+
+  /* 弹窗 */
+  .modal-mask { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 1000; align-items: center; justify-content: center; }
+  .modal-mask.show { display: flex; }
+  .modal { background: #fff; border-radius: 10px; width: 480px; max-width: 90vw; max-height: 80vh; display: flex; flex-direction: column; box-shadow: 0 12px 40px rgba(0,0,0,0.2); overflow: hidden; animation: pop 0.2s ease; }
+  @keyframes pop { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .modal-header { padding: 16px 20px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; justify-content: space-between; }
+  .modal-title { font-size: 16px; font-weight: 600; color: #1f1f1f; }
+  .modal-close { cursor: pointer; color: #8c8c8c; font-size: 20px; line-height: 1; background: none; border: none; }
+  .modal-close:hover { color: #262626; }
+  .modal-body { padding: 20px; overflow-y: auto; }
+  .wrong-list { display: flex; flex-direction: column; gap: 14px; }
+  .wrong-item { padding: 14px; background: #fff1f0; border: 1px solid #ffa39e; border-radius: 8px; }
+  .wrong-item .wq { font-size: 14px; font-weight: 600; margin-bottom: 8px; color: #262626; }
+  .wrong-item .wa { font-size: 13px; color: #cf1322; margin-bottom: 4px; }
+  .wrong-item .ca { font-size: 13px; color: #389e0d; }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><span class="logo">🛡️</span>特殊工种延期教育系统</div>
+  <div class="user">
+    <span class="avatar">张</span><span>学员：张三</span>
+    <button class="logout" onclick="logout()">退出登录</button>
+  </div>
+</header>
+
+<main class="main">
+  <!-- 成绩展示 -->
+  <section class="score-card">
+    <div class="status-icon" id="status-icon">✓</div>
+    <div class="status-label">本次考试得分</div>
+    <div class="score-num" id="score-num">0<span class="score-unit"> 分</span></div>
+    <div class="pass-line">总分 <b>100</b> 分　|　合格分数线 <b>60</b> 分</div>
+    <span class="tag" id="status-tag">合格</span>
+  </section>
+
+  <!-- 答题统计 -->
+  <section class="stat-card">
+    <h3>答题统计</h3>
+    <div class="stat-row">
+      <div class="stat-item"><div class="num total" id="total-num">100</div><div class="lbl">总题数</div></div>
+      <div class="stat-item"><div class="num correct" id="correct-num">0</div><div class="lbl">答对题数</div></div>
+      <div class="stat-item"><div class="num wrong" id="wrong-num">0</div><div class="lbl">答错题数</div></div>
+      <div class="stat-item"><div class="num score" id="score-num2">0</div><div class="lbl">得分</div></div>
+    </div>
+  </section>
+
+  <!-- 操作按钮 -->
+  <div class="actions">
+    <button class="btn btn-default" onclick="showWrong()">查看错题详情</button>
+    <button class="btn btn-primary" onclick="goMyExam()">返回我的考试</button>
+    <button class="btn btn-warn" id="retry-btn" style="display:none;" onclick="retryExam()">再次考试</button>
+  </div>
+  <div class="retry-tip" id="retry-tip" style="display:none;"></div>
+</main>
+
+<!-- 错题详情弹窗 -->
+<div class="modal-mask" id="modal-wrong">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title">错题详情</span>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="wrong-list" id="wrong-list"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // 读取考试结果
+  let result = null;
+  try { result = JSON.parse(sessionStorage.getItem('exam_result') || 'null'); } catch(e) {}
+  if (!result) {
+    // 无结果时兜底演示数据
+    result = { examId: 'e1', score: 72, correct: 72, wrong: 28, passed: true, total: 100 };
+  }
+
+  const { score, correct, wrong, passed, total, examId } = result;
+
+  // 渲染成绩
+  const icon = document.getElementById('status-icon');
+  const scoreNum = document.getElementById('score-num');
+  const tag = document.getElementById('status-tag');
+  if (passed) {
+    icon.className = 'status-icon pass';
+    icon.textContent = '✓';
+    scoreNum.className = 'score-num pass';
+    tag.className = 'tag tag-pass';
+    tag.textContent = '合格';
+  } else {
+    icon.className = 'status-icon fail';
+    icon.textContent = '✕';
+    scoreNum.className = 'score-num fail';
+    tag.className = 'tag tag-fail';
+    tag.textContent = '不合格';
+  }
+  scoreNum.innerHTML = score + '<span class="score-unit"> 分</span>';
+  document.getElementById('total-num').textContent = total;
+  document.getElementById('correct-num').textContent = correct;
+  document.getElementById('wrong-num').textContent = wrong;
+  document.getElementById('score-num2').textContent = score;
+
+  // 不合格且有重考次数 → 显示再次考试
+  if (!passed) {
+    let retriesMap = {};
+    try { retriesMap = JSON.parse(sessionStorage.getItem('exam_retries') || '{}'); } catch(e) {}
+    const remaining = retriesMap[examId] !== undefined ? retriesMap[examId] : 2;
+    const tip = document.getElementById('retry-tip');
+    if (remaining > 0) {
+      document.getElementById('retry-btn').style.display = '';
+      tip.style.display = 'block';
+      tip.textContent = '剩余可重考次数：' + remaining + ' 次';
+    } else {
+      tip.style.display = 'block';
+      tip.textContent = '重考次数已用尽，请联系管理员或等待下一次考试安排。';
+    }
+  }
+
+  // 模拟错题数据
+  const wrongSamples = [
+    { q: '1. 低压电气设备接地电阻一般不应大于多少欧姆？', wa: '您的答案：B. 10Ω', ca: '正确答案：A. 4Ω' },
+    { q: '5. 停电作业时，应在开关手柄上悬挂什么标示牌？', wa: '您的答案：B. 在此工作', ca: '正确答案：A. 禁止合闸，有人工作' },
+    { q: '8. 下列哪种灭火器不适用于电气火灾？', wa: '您的答案：A. 二氧化碳灭火器', ca: '正确答案：C. 泡沫灭火器' },
+  ];
+  document.getElementById('wrong-list').innerHTML = wrongSamples.map(w =>
+    `<div class="wrong-item"><div class="wq">${w.q}</div><div class="wa">${w.wa}</div><div class="ca">${w.ca}</div></div>`
+  ).join('');
+
+  function showWrong() { document.getElementById('modal-wrong').classList.add('show'); }
+  function closeModal() { document.getElementById('modal-wrong').classList.remove('show'); }
+  document.getElementById('modal-wrong').addEventListener('click', e => {
+    if (e.target.id === 'modal-wrong') closeModal();
+  });
+
+  function goMyExam() { window.location.href = '我的考试.html'; }
+  function retryExam() { window.location.href = '在线考试.html?examId=' + examId; }
+  function logout() { sessionStorage.clear(); window.location.href = '登录.html'; }
+</script>
+</body>
+</html>

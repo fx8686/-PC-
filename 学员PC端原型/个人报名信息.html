@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>个人报名信息 - 特殊工种延期教育系统</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+    background: #f0f2f5;
+    color: #262626;
+    min-height: 100vh;
+  }
+  a { text-decoration: none; color: inherit; }
+
+  /* ===== 顶部导航栏 ===== */
+  .topbar {
+    position: fixed; top: 0; left: 0; right: 0; height: 60px;
+    background: #fff; border-bottom: 1px solid #f0f0f0;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px; z-index: 100;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .brand { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 600; color: #1f1f1f; }
+  .brand .logo { width: 32px; height: 32px; border-radius: 8px; background: #1677ff; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .user { display: flex; align-items: center; gap: 16px; color: #595959; font-size: 14px; }
+  .user .avatar { width: 32px; height: 32px; border-radius: 50%; background: #e6f4ff; color: #1677ff; display: flex; align-items: center; justify-content: center; font-weight: 600; }
+  .user .divider { width: 1px; height: 16px; background: #e8e8e8; }
+  .logout { background: none; border: none; color: #8c8c8c; cursor: pointer; font-size: 14px; }
+  .logout:hover { color: #ff4d4f; }
+
+  /* ===== 左侧菜单栏 ===== */
+  .sidebar {
+    position: fixed; top: 60px; left: 0; bottom: 0; width: 220px;
+    background: #001529; color: rgba(255,255,255,0.75);
+    padding: 12px 0; overflow-y: auto; z-index: 99;
+  }
+  .menu-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 24px; font-size: 14px; cursor: pointer;
+    border-left: 3px solid transparent; transition: all 0.2s;
+  }
+  .menu-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
+  .menu-item.active { background: #1677ff; color: #fff; border-left-color: #fff; }
+  .menu-item.disabled { color: rgba(255,255,255,0.3); cursor: not-allowed; }
+  .menu-item.disabled:hover { background: transparent; color: rgba(255,255,255,0.3); }
+  .menu-item .icon { font-size: 16px; width: 20px; text-align: center; }
+
+  /* ===== 内容区 ===== */
+  .main { margin-left: 220px; margin-top: 60px; padding: 24px; min-height: calc(100vh - 60px); }
+  .page-title { font-size: 20px; font-weight: 600; margin-bottom: 16px; color: #1f1f1f; }
+
+  /* 温馨提示 */
+  .warm-tip {
+    background: #fffbe6; border: 1px solid #ffe58f; color: #d48806;
+    padding: 12px 16px; border-radius: 8px; font-size: 14px;
+    margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+  }
+
+  .card {
+    background: #fff; border-radius: 10px; padding: 24px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04); margin-bottom: 16px;
+  }
+  .card-title { font-size: 16px; font-weight: 600; color: #1f1f1f; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #f5f5f5; }
+
+  /* 状态标签 */
+  .tag { display: inline-flex; align-items: center; padding: 2px 10px; border-radius: 4px; font-size: 12px; font-weight: 500; }
+  .tag-draft { background: #f5f5f5; color: #595959; border: 1px solid #d9d9d9; }
+  .tag-pending { background: #fff7e6; color: #d46b08; border: 1px solid #ffd591; }
+  .tag-approved { background: #f6ffed; color: #389e0d; border: 1px solid #b7eb8f; }
+  .tag-rejected { background: #fff1f0; color: #cf1322; border: 1px solid #ffa39e; }
+  .tag-dot { width: 6px; height: 6px; border-radius: 50%; margin-right: 6px; }
+  .tag-draft .tag-dot { background: #8c8c8c; }
+  .tag-pending .tag-dot { background: #fa8c16; }
+  .tag-approved .tag-dot { background: #52c41a; }
+  .tag-rejected .tag-dot { background: #ff4d4f; }
+
+  /* 表单 */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 24px; }
+  .form-item.full { grid-column: 1 / -1; }
+  .form-item label { display: block; font-size: 14px; color: #262626; margin-bottom: 8px; }
+  .required::before { content: "*"; color: #ff4d4f; margin-right: 4px; }
+  .input-wrap input, .input-wrap select {
+    width: 100%; height: 40px; padding: 0 12px;
+    border: 1px solid #d9d9d9; border-radius: 6px; font-size: 14px;
+    outline: none; transition: all 0.2s; background: #fff;
+  }
+  .input-wrap select { cursor: pointer; }
+  .input-wrap input:hover, .input-wrap select:hover { border-color: #4096ff; }
+  .input-wrap input:focus, .input-wrap select:focus { border-color: #1677ff; box-shadow: 0 0 0 2px rgba(22,119,255,0.12); }
+  .input-wrap input:disabled, .input-wrap select:disabled { background: #f5f5f5; color: #8c8c8c; cursor: not-allowed; }
+  .input-wrap.readonly input { background: #fafafa; color: #595959; }
+  .hint { font-size: 12px; color: #8c8c8c; margin-top: 6px; }
+  .date-range { display: flex; gap: 12px; align-items: center; }
+  .date-range .input-wrap { flex: 1; }
+  .date-range .sep { color: #8c8c8c; font-size: 14px; }
+
+  /* 上传组件 */
+  .upload-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .upload-col { display: flex; flex-direction: column; }
+  .uploader {
+    border: 1px dashed #d9d9d9; border-radius: 8px;
+    height: 160px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.2s; position: relative;
+    background: #fafafa;
+  }
+  .uploader:hover { border-color: #1677ff; background: #f0f7ff; }
+  .uploader.disabled { cursor: not-allowed; opacity: 0.6; }
+  .uploader.disabled:hover { border-color: #d9d9d9; background: #fafafa; }
+  .uploader .up-icon { font-size: 32px; color: #bfbfbf; margin-bottom: 6px; }
+  .uploader .up-text { font-size: 13px; color: #595959; margin-bottom: 2px; }
+  .uploader .up-hint { font-size: 11px; color: #8c8c8c; }
+  .uploader input[type=file] { display: none; }
+  .upload-preview {
+    width: 100%; height: 100%; border-radius: 8px; object-fit: cover;
+  }
+  .upload-actions {
+    position: absolute; top: 8px; right: 8px; display: flex; gap: 6px;
+  }
+  .upload-actions button {
+    width: 26px; height: 26px; border: none; border-radius: 50%;
+    background: rgba(0,0,0,0.55); color: #fff; cursor: pointer;
+    font-size: 13px; display: flex; align-items: center; justify-content: center;
+  }
+  .upload-actions button:hover { background: rgba(0,0,0,0.75); }
+  .upload-label { font-size: 14px; color: #262626; margin-bottom: 8px; font-weight: 500; }
+
+  /* 按钮 */
+  .btn { height: 38px; padding: 0 20px; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; transition: all 0.2s; font-weight: 500; }
+  .btn-primary { background: #1677ff; color: #fff; }
+  .btn-primary:hover:not(:disabled) { background: #4096ff; }
+  .btn-primary:active:not(:disabled) { background: #0958d9; }
+  .btn-primary:disabled { background: #bfbfbf; cursor: not-allowed; }
+  .btn-default { background: #fff; color: #595959; border: 1px solid #d9d9d9; }
+  .btn-default:hover:not(:disabled) { color: #1677ff; border-color: #1677ff; }
+  .btn-default:disabled { color: #bfbfbf; cursor: not-allowed; border-color: #e8e8e8; }
+  .btn-danger { background: #fff; color: #ff4d4f; border: 1px solid #ffa39e; }
+  .btn-danger:hover:not(:disabled) { background: #fff1f0; }
+  .btn-link { background: none; border: none; color: #1677ff; cursor: pointer; font-size: 13px; padding: 0 8px; }
+  .btn-link:hover { text-decoration: underline; }
+  .btn-link:disabled { color: #bfbfbf; cursor: not-allowed; text-decoration: none; }
+
+  .btn-add {
+    background: #fff; color: #1677ff; border: 1px dashed #1677ff;
+    width: 100%; height: 48px; border-radius: 8px; font-size: 15px;
+    cursor: pointer; transition: all 0.2s; font-weight: 500;
+  }
+  .btn-add:hover { background: #e6f4ff; }
+
+  /* 档案卡片头部 */
+  .archive-card { background: #fff; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); margin-bottom: 16px; overflow: hidden; }
+  .archive-head {
+    padding: 16px 24px; border-bottom: 1px solid #f5f5f5;
+    display: flex; align-items: center; justify-content: space-between;
+    background: #fafafa;
+  }
+  .archive-head .title { font-size: 16px; font-weight: 600; color: #1f1f1f; display: flex; align-items: center; gap: 12px; }
+  .archive-body { padding: 24px; }
+  .archive-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; padding-top: 16px; border-top: 1px solid #f5f5f5; }
+
+  /* 弹窗 */
+  .modal-mask { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 1000; align-items: center; justify-content: center; }
+  .modal-mask.show { display: flex; }
+  .modal { background: #fff; border-radius: 10px; width: 400px; max-width: 90vw; box-shadow: 0 12px 40px rgba(0,0,0,0.2); overflow: hidden; animation: pop 0.2s ease; }
+  @keyframes pop { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .modal-header { padding: 16px 20px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; justify-content: space-between; }
+  .modal-title { font-size: 16px; font-weight: 600; color: #1f1f1f; }
+  .modal-close { cursor: pointer; color: #8c8c8c; font-size: 20px; line-height: 1; background: none; border: none; }
+  .modal-close:hover { color: #262626; }
+  .modal-body { padding: 24px 20px; }
+  .modal-icon { width: 56px; height: 56px; border-radius: 50%; background: #f6ffed; color: #52c41a; display: flex; align-items: center; justify-content: center; font-size: 30px; margin: 0 auto 14px; }
+  .modal-icon.info { background: #e6f4ff; color: #1677ff; }
+  .modal-body p { text-align: center; color: #262626; font-size: 15px; line-height: 1.6; }
+  .modal-footer { padding: 12px 20px 20px; text-align: center; }
+  .modal-footer .btn { width: 120px; height: 38px; }
+
+  /* Toast */
+  .toast {
+    position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
+    background: rgba(0,0,0,0.78); color: #fff; padding: 10px 20px;
+    border-radius: 6px; font-size: 14px; z-index: 2000;
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .toast.show { opacity: 1; }
+
+  .empty-state {
+    text-align: center; padding: 40px 20px; color: #8c8c8c;
+    background: #fafafa; border-radius: 8px; margin-bottom: 16px;
+  }
+  .empty-state .ico { font-size: 40px; margin-bottom: 10px; }
+</style>
+</head>
+<body>
+<!-- 顶部导航栏 -->
+<header class="topbar">
+  <div class="brand"><span class="logo">🛡️</span>特殊工种延期教育系统</div>
+  <div class="user">
+    <span class="avatar" id="user-avatar">张</span>
+    <span>学员：<span id="user-name">张三</span></span>
+    <span class="divider"></span>
+    <span>证件号：<span id="user-idcard">110***********1234</span></span>
+    <span class="divider"></span>
+    <button class="logout" onclick="logout()">退出登录</button>
+  </div>
+</header>
+
+<!-- 左侧菜单栏 -->
+<aside class="sidebar">
+  <a href="工作台.html" class="menu-item" style="display:none;"><span class="icon">🏠</span><span>首页工作台</span></a>
+  <a href="个人报名信息.html" class="menu-item active"><span class="icon">📋</span><span>个人报名信息</span></a>
+  <a href="我的课程.html" class="menu-item" data-lock="1"><span class="icon">📚</span><span>我的课程</span></a>
+  <a href="缴费订单.html" class="menu-item"><span class="icon">💰</span><span>缴费订单</span></a>
+  <a href="我的考试.html" class="menu-item" data-lock="1"><span class="icon">📝</span><span>我的考试</span></a>
+  <a href="继续教育档案.html" class="menu-item" style="display:none;"><span class="icon">📄</span><span>继续教育档案</span></a>
+  <a href="我的证书.html" class="menu-item" style="display:none;"><span class="icon">🎓</span><span>我的证书</span></a>
+  <a href="系统公告.html" class="menu-item" style="display:none;"><span class="icon">📢</span><span>系统公告</span></a>
+  <a href="帮助中心.html" class="menu-item" style="display:none;"><span class="icon">❓</span><span>帮助中心</span></a>
+</aside>
+
+<!-- 内容区 -->
+<main class="main">
+  <div class="page-title">个人报名信息</div>
+
+  <!-- 温馨提示 -->
+  <div class="warm-tip">
+    <span style="font-size:18px;">💡</span>
+    <span>如一人多证可选择不同工种添加多个进行报名学习。</span>
+  </div>
+
+  <!-- 区域 A：共用基础信息（只读，来自注册信息） -->
+  <section class="card">
+    <div class="card-title">共用基础信息（读取注册信息，不可编辑）</div>
+    <div class="form-grid">
+      <div class="form-item">
+        <label>姓名</label>
+        <div class="input-wrap readonly"><input type="text" id="base-name" value="张三" disabled></div>
+      </div>
+      <div class="form-item">
+        <label>性别</label>
+        <div class="input-wrap readonly"><input type="text" id="base-gender" value="男" disabled></div>
+      </div>
+      <div class="form-item">
+        <label>身份证号</label>
+        <div class="input-wrap readonly"><input type="text" id="base-idcard" value="110101199001011234" disabled></div>
+      </div>
+      <div class="form-item">
+        <label>手机号</label>
+        <div class="input-wrap readonly"><input type="text" id="base-phone" value="138****8888" disabled></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 区域 B：报名档案列表 -->
+  <section class="card">
+    <div class="card-title">报名档案列表</div>
+    <div id="archives-list"></div>
+    <button class="btn-add" onclick="addArchive()">＋ 添加报名学习</button>
+  </section>
+</main>
+
+<!-- 提交成功弹窗 -->
+<div class="modal-mask" id="modal-success">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title">提交成功</span>
+      <button class="modal-close" onclick="closeModal('modal-success')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-icon">✓</div>
+      <p>您的报名信息已提交，请等待系统审核。</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="closeModal('modal-success')">我知道了</button>
+    </div>
+  </div>
+</div>
+
+<!-- 图片预览弹窗 -->
+<div class="modal-mask" id="modal-img">
+  <div class="modal" style="width:auto;max-width:90vw;" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title" id="img-title">图片预览</span>
+      <button class="modal-close" onclick="closeImgModal()">×</button>
+    </div>
+    <div class="modal-body" style="padding:16px;max-height:70vh;overflow:auto;">
+      <img id="preview-img" src="" style="max-width:100%;max-height:65vh;display:block;border-radius:6px;">
+    </div>
+  </div>
+</div>
+
+<!-- 删除确认弹窗 -->
+<div class="modal-mask" id="modal-confirm">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title">确认删除</span>
+      <button class="modal-close" onclick="closeModal('modal-confirm')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-icon" style="background:#fff1f0;color:#ff4d4f;">!</div>
+      <p>确定要删除该报名档案吗？删除后不可恢复。</p>
+    </div>
+    <div class="modal-footer" style="display:flex;gap:10px;justify-content:center;">
+      <button class="btn btn-default" onclick="closeModal('modal-confirm')">取消</button>
+      <button class="btn btn-primary" style="background:#ff4d4f;" onclick="confirmDelete()">删除</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ========== 读取当前登录用户 ==========
+  function getCurrentUser() {
+    try { return JSON.parse(sessionStorage.getItem('current_user') || 'null'); } catch(e) { return null; }
+  }
+  const currentUser = getCurrentUser();
+  if (currentUser) {
+    document.getElementById('user-name').textContent = currentUser.name || '张三';
+    document.getElementById('user-avatar').textContent = (currentUser.name || '张').charAt(0);
+    const idCard = currentUser.idCard || '110101199001011234';
+    const masked = idCard.length >= 10 ? idCard.substring(0,3) + '***********' + idCard.substring(idCard.length-4) : idCard;
+    document.getElementById('user-idcard').textContent = masked;
+    // 填充基础信息区
+    document.getElementById('base-name').value = currentUser.name || '张三';
+    document.getElementById('base-gender').value = currentUser.gender || '男';
+    document.getElementById('base-idcard').value = currentUser.idCard || '110101199001011234';
+    const phone = currentUser.phone || '13800138000';
+    document.getElementById('base-phone').value = phone.length === 11 ? phone.substring(0,3) + '****' + phone.substring(7) : phone;
+  }
+
+  // ========== 档案数据管理 ==========
+  const WORK_TYPES = [
+    '低压电工作业','高压电工作业','焊接与热切割作业',
+    '高处作业','制冷与空调作业','煤矿安全作业'
+  ];
+  const STATUS_CONFIG = {
+    draft:    { cls: 'tag-draft',    text: '未提交' },
+    pending:  { cls: 'tag-pending',  text: '已提交待审核' },
+    approved: { cls: 'tag-approved', text: '审核通过' },
+    rejected: { cls: 'tag-rejected', text: '审核驳回' }
+  };
+
+  function getArchives() {
+    try { return JSON.parse(sessionStorage.getItem('signup_archives') || '[]'); } catch(e) { return []; }
+  }
+  function saveArchives(list) {
+    sessionStorage.setItem('signup_archives', JSON.stringify(list));
+  }
+
+  // 演示数据初始化（首次进入且无档案时写入，一人多证覆盖三种状态）
+  function ensureDemoData() {
+    if (sessionStorage.getItem('pay_demo_seeded')) return;
+    sessionStorage.setItem('pay_demo_seeded', '1');
+    if (getArchives().length) return;
+    saveArchives([
+      { id:'REG2025010001', status:'approved', paid:true,  workType:'低压电工作业',     certNo:'TZ202111000123', learnType:'继续教育学员', validFrom:'2022-08-01', validTo:'2027-08-01', createdAt:'2025-09-02 10:12', paidAt:'2025-09-03 09:20' },
+      { id:'REG2025010002', status:'approved', paid:false, workType:'高压电工作业',     certNo:'TZ202111000456', learnType:'继续教育学员', validFrom:'2022-09-01', validTo:'2027-09-01', createdAt:'2025-09-05 14:30' },
+      { id:'REG2025010003', status:'pending',  paid:false, workType:'焊接与热切割作业', certNo:'TZ202111000789', learnType:'继续教育学员', validFrom:'2023-01-01', validTo:'2028-01-01', createdAt:'2025-09-08 16:45' },
+      { id:'REG2025010004', status:'approved', paid:true,  workType:'高处作业',         certNo:'TZ202411000321', learnType:'继续教育学员', validFrom:'2021-08-01', validTo:'2026-08-01', createdAt:'2024-08-11 09:00', paidAt:'2024-08-12 10:05' }
+    ]);
+  }
+
+  // 计算整体审核状态（用于锁定课程/考试）
+  // 规则：只要存在已审核通过的档案即视为通过（一人多证混合状态时，不因个别待审核锁定课程）
+  function refreshQualStatus() {
+    const list = getArchives();
+    const hasApproved = list.some(a => a.status === 'approved');
+    const hasPending = list.some(a => a.status === 'pending');
+    const hasRejected = list.some(a => a.status === 'rejected');
+    if (hasApproved) sessionStorage.setItem('qual_status', 'approved');
+    else if (hasPending) sessionStorage.setItem('qual_status', 'pending');
+    else if (hasRejected) sessionStorage.setItem('qual_status', 'rejected');
+    else sessionStorage.setItem('qual_status', 'draft');
+  }
+
+  // ========== 渲染档案列表 ==========
+  function renderArchives() {
+    const list = getArchives();
+    const container = document.getElementById('archives-list');
+    if (list.length === 0) {
+      container.innerHTML = `<div class="empty-state">
+        <div class="ico">📭</div>
+        <div>暂无报名档案，点击下方按钮添加报名学习</div>
+      </div>`;
+      return;
+    }
+    container.innerHTML = list.map((arc, idx) => renderArchiveCard(arc, idx)).join('');
+  }
+
+  function renderArchiveCard(arc, idx) {
+    const locked = arc.status === 'pending' || arc.status === 'approved';
+    const cfg = STATUS_CONFIG[arc.status];
+    const workTypeOptions = WORK_TYPES.map(w => `<option value="${w}" ${arc.workType===w?'selected':''}>${w}</option>`).join('');
+
+    // 上传区块渲染
+    const uploadHtml = (key, label, icon) => {
+      const hasImg = arc[key];
+      if (hasImg) {
+        return `<div class="upload-col">
+          <div class="upload-label">${label} <span style="color:#ff4d4f;">*</span></div>
+          <label class="uploader ${locked?'disabled':''}" id="up-${idx}-${key}">
+            <input type="file" accept="image/png,image/jpeg" ${locked?'disabled':''} onchange="handleUpload(event,${idx},'${key}')">
+            <img src="${hasImg}" class="upload-preview" alt="${label}">
+            <div class="upload-actions">
+              <button type="button" title="预览" onclick="event.preventDefault();event.stopPropagation();previewImg(${idx},'${key}','${label}')">🔍</button>
+              ${locked?'':`<button type="button" title="删除" onclick="event.preventDefault();event.stopPropagation();removeImg(${idx},'${key}')">✕</button>`}
+            </div>
+          </label>
+        </div>`;
+      }
+      return `<div class="upload-col">
+        <div class="upload-label">${label} <span style="color:#ff4d4f;">*</span></div>
+        <label class="uploader ${locked?'disabled':''}" id="up-${idx}-${key}">
+          <input type="file" accept="image/png,image/jpeg" ${locked?'disabled':''} onchange="handleUpload(event,${idx},'${key}')">
+          <div class="up-icon">${icon}</div>
+          <div class="up-text">点击上传${label}</div>
+          <div class="up-hint">JPG / PNG，≤ 5MB</div>
+        </label>
+      </div>`;
+    };
+
+    return `<div class="archive-card">
+      <div class="archive-head">
+        <div class="title">
+          报名学习${cnNum(idx + 1)}
+          <span class="tag ${cfg.cls}"><span class="tag-dot"></span>${cfg.text}</span>
+        </div>
+        <div>
+          ${arc.status === 'pending' ? `<button class="btn-link" onclick="simulateApprove(${idx})">模拟审核通过</button>` : ''}
+          ${!locked ? `<button class="btn-link" onclick="deleteArchive(${idx})">删除</button>` : ''}
+        </div>
+      </div>
+      <div class="archive-body">
+        <div class="form-grid">
+          <div class="form-item">
+            <label class="required">工种</label>
+            <div class="input-wrap">
+              <select id="f-${idx}-workType" ${locked?'disabled':''}>
+                <option value="">请选择工种</option>
+                ${workTypeOptions}
+              </select>
+            </div>
+          </div>
+          <div class="form-item">
+            <label class="required">学习类型</label>
+            <div class="input-wrap">
+              <select id="f-${idx}-learnType" disabled>
+                <option value="继续教育学员" selected>继续教育学员</option>
+              </select>
+            </div>
+            <div class="hint">本系统仅支持继续教育学员报名</div>
+          </div>
+          <div class="form-item">
+            <label class="required">证书编号</label>
+            <div class="input-wrap">
+              <input type="text" id="f-${idx}-certNo" value="${arc.certNo||''}" placeholder="请输入证书编号" maxlength="30" ${locked?'disabled':''}>
+            </div>
+          </div>
+          <div class="form-item full">
+            <label class="required">证书有效起止时间</label>
+            <div class="date-range">
+              <div class="input-wrap"><input type="date" id="f-${idx}-validFrom" value="${arc.validFrom||''}" ${locked?'disabled':''}></div>
+              <span class="sep">至</span>
+              <div class="input-wrap"><input type="date" id="f-${idx}-validTo" value="${arc.validTo||''}" ${locked?'disabled':''}></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-item full" style="margin-top:18px;">
+          <div class="upload-row">
+            ${uploadHtml('idFront','身份证正面','🪪')}
+            ${uploadHtml('idBack','身份证反面','🪪')}
+            ${uploadHtml('certImg','证书照片','📜')}
+          </div>
+        </div>
+
+        <div class="form-item full" style="margin-top:18px;">
+          <div class="upload-row" style="grid-template-columns:1fr 1fr;align-items:end;">
+            ${uploadHtml('healthReport','近三个月体检报告照片','📋')}
+            <div class="upload-col">
+              <div class="upload-label">&nbsp;</div>
+              <button type="button" class="btn btn-default" style="width:100%;" onclick="downloadTemplate()">⬇ 下载体检表模板</button>
+              <div class="hint" style="margin-top:8px;">请下载模板，填写后拍照上传</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="archive-actions">
+          <button class="btn btn-default" onclick="saveArchive(${idx})" ${locked?'disabled':''}>保存</button>
+          <button class="btn btn-primary" onclick="submitArchive(${idx})" ${locked?'disabled':''}>提交审核</button>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  function cnNum(n) {
+    const arr = ['','一','二','三','四','五','六','七','八','九','十'];
+    return n <= 10 ? arr[n] : n;
+  }
+
+  // ========== 操作：新增/保存/提交/删除 ==========
+  function addArchive() {
+    const list = getArchives();
+    list.push({
+      id: 'REG' + Date.now(),
+      status: 'draft',
+      paid: false,
+      createdAt: new Date().toLocaleString('zh-CN', { hour12: false }).replace(/\//g, '-'),
+      workType: '',
+      learnType: '继续教育学员',
+      certNo: '',
+      validFrom: '',
+      validTo: '',
+      idFront: '',
+      idBack: '',
+      certImg: '',
+      healthReport: ''
+    });
+    saveArchives(list);
+    refreshQualStatus();
+    renderArchives();
+    showToast('已新增报名档案');
+  }
+
+  function collectForm(idx) {
+    return {
+      workType: document.getElementById('f-'+idx+'-workType').value,
+      certNo: document.getElementById('f-'+idx+'-certNo').value.trim(),
+      validFrom: document.getElementById('f-'+idx+'-validFrom').value,
+      validTo: document.getElementById('f-'+idx+'-validTo').value
+    };
+  }
+
+  function saveArchive(idx) {
+    const list = getArchives();
+    const data = collectForm(idx);
+    list[idx] = Object.assign({}, list[idx], data);
+    saveArchives(list);
+    showToast('档案已保存（草稿）');
+  }
+
+  function validateArchive(idx) {
+    const list = getArchives();
+    const arc = list[idx];
+    const data = collectForm(idx);
+    if (!data.workType) { showToast('请选择工种'); return false; }
+    if (!data.certNo) { showToast('请输入证书编号'); return false; }
+    if (!data.validFrom) { showToast('请选择证书生效时间'); return false; }
+    if (!data.validTo) { showToast('请选择证书到期时间'); return false; }
+    if (data.validFrom && data.validTo && data.validFrom >= data.validTo) {
+      showToast('证书到期时间需晚于生效时间'); return false;
+    }
+    if (!arc.idFront) { showToast('请上传身份证正面照片'); return false; }
+    if (!arc.idBack) { showToast('请上传身份证反面照片'); return false; }
+    if (!arc.certImg) { showToast('请上传证书照片'); return false; }
+    if (!arc.healthReport) { showToast('请上传近三个月体检报告照片'); return false; }
+    return true;
+  }
+
+  function submitArchive(idx) {
+    if (!validateArchive(idx)) return;
+    const list = getArchives();
+    const data = collectForm(idx);
+    list[idx] = Object.assign({}, list[idx], data, { status: 'pending' });
+    saveArchives(list);
+    refreshQualStatus();
+    renderArchives();
+    document.getElementById('modal-success').classList.add('show');
+  }
+
+  // 模拟审核通过（演示用）
+  function simulateApprove(idx) {
+    const list = getArchives();
+    list[idx].status = 'approved';
+    saveArchives(list);
+    refreshQualStatus();
+    renderArchives();
+    showToast('（演示）审核已通过，课程与考试功能已解锁');
+  }
+
+  let pendingDeleteIdx = -1;
+  function deleteArchive(idx) {
+    pendingDeleteIdx = idx;
+    document.getElementById('modal-confirm').classList.add('show');
+  }
+  function confirmDelete() {
+    const list = getArchives();
+    list.splice(pendingDeleteIdx, 1);
+    saveArchives(list);
+    refreshQualStatus();
+    renderArchives();
+    closeModal('modal-confirm');
+    showToast('档案已删除');
+  }
+
+  // ========== 图片上传 ==========
+  function handleUpload(e, idx, key) {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { showToast('图片大小不能超过 5MB'); e.target.value = ''; return; }
+    if (!/^image\/(png|jpeg|jpg)$/.test(file.type)) { showToast('仅支持 JPG / PNG 格式'); e.target.value = ''; return; }
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const list = getArchives();
+      list[idx][key] = ev.target.result;
+      saveArchives(list);
+      renderArchives();
+    };
+    reader.readAsDataURL(file);
+  }
+  function removeImg(idx, key) {
+    const list = getArchives();
+    list[idx][key] = '';
+    saveArchives(list);
+    renderArchives();
+  }
+  function previewImg(idx, key, label) {
+    const list = getArchives();
+    const src = list[idx][key];
+    if (!src) return;
+    document.getElementById('preview-img').src = src;
+    document.getElementById('img-title').textContent = label + ' 预览';
+    document.getElementById('modal-img').classList.add('show');
+  }
+  function closeImgModal() {
+    document.getElementById('modal-img').classList.remove('show');
+  }
+
+  // ========== 下载模板（模拟） ==========
+  function downloadTemplate() {
+    showToast('体检表模板下载中...');
+    setTimeout(() => {
+      // 模拟文件下载提示
+      alert('体检表模板已下载（演示：实际环境将下载 PDF/Word 文件）');
+    }, 600);
+  }
+
+  // ========== 弹窗 & Toast ==========
+  function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+  document.getElementById('modal-success').addEventListener('click', e => { if(e.target.id==='modal-success') closeModal('modal-success'); });
+  document.getElementById('modal-confirm').addEventListener('click', e => { if(e.target.id==='modal-confirm') closeModal('modal-confirm'); });
+  document.getElementById('modal-img').addEventListener('click', e => { if(e.target.id==='modal-img') closeImgModal(); });
+
+  let toastTimer = null;
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+  }
+
+  // ========== 菜单锁定 ==========
+  function lockMenus() {
+    const status = sessionStorage.getItem('qual_status') || 'draft';
+    if (status !== 'approved') {
+      const tip = status === 'pending' ? '报名信息待审核，暂不可访问该模块' : (status === 'rejected' ? '报名信息审核未通过，请修改后重新提交' : '请先提交报名信息，审核通过后可访问该模块');
+      document.querySelectorAll('.menu-item[data-lock="1"]').forEach(item => {
+        item.classList.add('disabled');
+        item.setAttribute('href', 'javascript:void(0)');
+        item.addEventListener('click', e => { e.preventDefault(); alert(tip); });
+      });
+    }
+  }
+
+  function logout() { sessionStorage.clear(); window.location.href = '登录.html'; }
+
+  // ========== 初始化 ==========
+  ensureDemoData();
+  refreshQualStatus();
+  renderArchives();
+  lockMenus();
+</script>
+</body>
+</html>

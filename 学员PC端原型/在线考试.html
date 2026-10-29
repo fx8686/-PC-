@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>在线考试 - 特殊工种延期教育系统</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+    background: #f0f2f5; color: #262626; min-height: 100vh;
+    -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;
+  }
+  a { text-decoration: none; color: inherit; }
+
+  /* 顶部状态栏 */
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    height: 60px; background: #fff; border-bottom: 1px solid #f0f0f0;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px; box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .brand { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 600; color: #1f1f1f; }
+  .brand .logo { width: 32px; height: 32px; border-radius: 8px; background: #1677ff; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .exam-meta { display: flex; align-items: center; gap: 24px; font-size: 14px; }
+  .exam-meta .item { display: flex; align-items: center; gap: 6px; color: #595959; }
+  .exam-meta .timer { color: #cf1322; font-weight: 700; font-size: 16px; font-variant-numeric: tabular-nums; }
+  .exam-meta .timer.warning { animation: blink 1s infinite; }
+  @keyframes blink { 50% { opacity: 0.4; } }
+  .btn { height: 38px; padding: 0 20px; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; transition: all 0.2s; font-weight: 500; }
+  .btn-primary { background: #1677ff; color: #fff; }
+  .btn-primary:hover { background: #4096ff; }
+  .btn-primary:active { background: #0958d9; }
+  .btn-danger { background: #ff4d4f; color: #fff; }
+  .btn-danger:hover { background: #ff7875; }
+  .btn-default { background: #fff; color: #595959; border: 1px solid #d9d9d9; }
+  .btn-default:hover { color: #1677ff; border-color: #1677ff; }
+
+  /* 主体布局 */
+  .layout { display: flex; padding: 16px; gap: 16px; max-width: 1400px; margin: 0 auto; }
+  .nav-panel { width: 260px; flex-shrink: 0; }
+  .question-panel { flex: 1; min-width: 0; }
+
+  .card { background: #fff; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+  .card-title { padding: 14px 20px; font-size: 15px; font-weight: 600; border-bottom: 1px solid #f0f0f0; }
+  .nav-body { padding: 16px; }
+  .legend { display: flex; gap: 14px; font-size: 12px; color: #8c8c8c; margin-bottom: 14px; flex-wrap: wrap; }
+  .legend span { display: flex; align-items: center; gap: 5px; }
+  .legend .dot { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+  .dot.answered { background: #52c41a; }
+  .dot.unanswered { background: #d9d9d9; }
+  .dot.marked { background: #faad14; }
+  .dot.current { background: #1677ff; }
+  .q-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+  .q-num {
+    width: 100%; aspect-ratio: 1; border: 1px solid #d9d9d9; background: #fafafa;
+    border-radius: 6px; font-size: 13px; cursor: pointer; transition: all 0.15s;
+    display: flex; align-items: center; justify-content: center; position: relative;
+  }
+  .q-num:hover { border-color: #1677ff; }
+  .q-num.answered { background: #f6ffed; border-color: #b7eb8f; color: #389e0d; }
+  .q-num.marked { background: #fffbe6; border-color: #ffe58f; color: #d48806; }
+  .q-num.current { background: #e6f4ff; border-color: #1677ff; color: #1677ff; font-weight: 600; }
+  .q-num.marked::after {
+    content: ""; position: absolute; top: 2px; right: 2px; width: 6px; height: 6px;
+    border-radius: 50%; background: #faad14;
+  }
+
+  /* 答题区 */
+  .q-card { padding: 28px 32px; }
+  .q-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+  .q-title { font-size: 16px; font-weight: 600; line-height: 1.6; }
+  .q-type-tag { display: inline-block; font-size: 12px; padding: 2px 8px; border-radius: 4px; margin-right: 10px; font-weight: 500; }
+  .q-type-tag.single { background: #e6f4ff; color: #1677ff; }
+  .q-type-tag.multiple { background: #f9f0ff; color: #722ed1; }
+  .q-type-tag.judge { background: #fff7e6; color: #d46b08; }
+  .mark-btn {
+    height: 32px; padding: 0 14px; border: 1px solid #d9d9d9; background: #fff;
+    border-radius: 6px; font-size: 13px; cursor: pointer; color: #595959; transition: all 0.2s;
+  }
+  .mark-btn:hover { color: #faad14; border-color: #faad14; }
+  .mark-btn.active { background: #fffbe6; color: #d48806; border-color: #faad14; }
+
+  .options { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+  .option {
+    padding: 12px 16px; border: 1px solid #d9d9d9; border-radius: 8px; cursor: pointer;
+    font-size: 14px; transition: all 0.2s; display: flex; align-items: flex-start; gap: 10px;
+  }
+  .option:hover { border-color: #1677ff; background: #f0f7ff; }
+  .option.selected { border-color: #1677ff; background: #e6f4ff; color: #0958d9; }
+  .option .opt-label {
+    width: 22px; height: 22px; border-radius: 50%; border: 1px solid #d9d9d9;
+    display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0;
+    background: #fff; color: #595959;
+  }
+  .option.selected .opt-label { background: #1677ff; color: #fff; border-color: #1677ff; }
+  .option.multiple .opt-label { border-radius: 4px; }
+
+  .q-actions { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f5f5f5; padding-top: 20px; }
+  .q-actions .nav-btns { display: flex; gap: 12px; }
+
+  /* 弹窗 */
+  .modal-mask { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 1000; align-items: center; justify-content: center; }
+  .modal-mask.show { display: flex; }
+  .modal { background: #fff; border-radius: 10px; width: 440px; max-width: 90vw; box-shadow: 0 12px 40px rgba(0,0,0,0.2); overflow: hidden; animation: pop 0.2s ease; }
+  @keyframes pop { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .modal-header { padding: 16px 20px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; justify-content: space-between; }
+  .modal-title { font-size: 16px; font-weight: 600; color: #1f1f1f; }
+  .modal-close { cursor: pointer; color: #8c8c8c; font-size: 20px; line-height: 1; background: none; border: none; }
+  .modal-close:hover { color: #262626; }
+  .modal-body { padding: 24px 20px; text-align: center; }
+  .modal-icon { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; margin: 0 auto 14px; }
+  .modal-icon.warn { background: #fff7e6; color: #fa8c16; }
+  .modal-icon.timeout { background: #fff1f0; color: #ff4d4f; }
+  .modal-body p { color: #262626; font-size: 15px; line-height: 1.6; }
+  .modal-body .unanswered { color: #cf1322; font-weight: 600; }
+  .modal-footer { padding: 12px 20px 20px; display: flex; justify-content: center; gap: 12px; }
+  .modal-footer .btn { width: 120px; height: 38px; }
+</style>
+</head>
+<body oncopy="return false;" oncut="return false;" oncontextmenu="return false;">
+<header class="topbar">
+  <div class="brand"><span class="logo">🛡️</span><span id="exam-name">2025年度继续教育考试</span></div>
+  <div class="exam-meta">
+    <div class="item">已答 <b id="answered-count" style="color:#1677ff;">0</b> / 80 题</div>
+    <div class="item">剩余考试机会 <b id="chance-count" style="color:#cf1322;">2</b> 次</div>
+    <div class="item">剩余时间 <span class="timer" id="timer">60:00</span></div>
+    <button class="btn btn-danger" onclick="openSubmitConfirm()">交卷</button>
+  </div>
+</header>
+
+<div class="layout">
+  <!-- 左侧题号导航 -->
+  <div class="nav-panel">
+    <div class="card">
+      <div class="card-title">题目导航</div>
+      <div class="nav-body">
+        <div class="legend">
+          <span><i class="dot current"></i>当前</span>
+          <span><i class="dot answered"></i>已答</span>
+          <span><i class="dot unanswered"></i>未答</span>
+          <span><i class="dot marked"></i>标记</span>
+        </div>
+        <div class="q-grid" id="q-grid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 右侧答题区 -->
+  <div class="question-panel">
+    <div class="card q-card">
+      <div class="q-header">
+        <div class="q-title" id="q-title"></div>
+        <button class="mark-btn" id="mark-btn" onclick="toggleMark()">🚩 标记本题</button>
+      </div>
+      <div class="options" id="q-options"></div>
+      <div class="q-actions">
+        <button class="btn btn-default" id="prev-btn" onclick="prevQ()">上一题</button>
+        <span style="font-size:13px;color:#8c8c8c;">第 <b id="cur-num">1</b> / 80 题</span>
+        <button class="btn btn-primary" id="next-btn" onclick="nextQ()">下一题</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 交卷确认弹窗 -->
+<div class="modal-mask" id="modal-submit">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title">交卷确认</span>
+      <button class="modal-close" onclick="closeModal('modal-submit')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-icon warn">⚠️</div>
+      <p>您还有 <span class="unanswered" id="unanswered-num">0</span> 道题未作答，<br>确定要提交试卷吗？</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeModal('modal-submit')">继续答题</button>
+      <button class="btn btn-primary" onclick="doSubmit()">确认交卷</button>
+    </div>
+  </div>
+</div>
+
+<!-- 考试超时弹窗 -->
+<div class="modal-mask" id="modal-timeout">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">考试时间到</span></div>
+    <div class="modal-body">
+      <div class="modal-icon timeout">⏰</div>
+      <p>考试时间已到，系统将自动提交您的试卷。</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="doSubmit()">确认并查看结果</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const examId = new URLSearchParams(location.search).get('examId') || 'e1';
+  const examNames = { e1: '2025年度继续教育考试', e2: '2024年度继续教育补考', e3: '2024年度继续教育考试', e4: '2025年度继续教育考试（高处作业）' };
+  document.getElementById('exam-name').textContent = examNames[examId] || '继续教育考试';
+
+  // 剩余考试机会（共 2 次）
+  let examRetries = {};
+  try { examRetries = JSON.parse(sessionStorage.getItem('exam_retries') || '{}'); } catch(e) {}
+  if (examRetries[examId] !== undefined) {
+    document.getElementById('chance-count').textContent = examRetries[examId];
+  }
+
+  // ========== 生成 80 道题（前端模拟题库） ==========
+  const singleBank = [
+    { t: '低压电工操作时，下列哪种做法是正确的？', o: ['带电作业时不戴绝缘手套','停电后先验电再作业','用湿手操作电气开关','单人从事高压作业'], a: 1 },
+    { t: '发现有人触电，首先应采取的措施是？', o: ['立即用手拉开触电者','立即切断电源或用绝缘物使触电者脱离电源','立即拨打120','立即进行心肺复苏'], a: 1 },
+    { t: '低压电气设备接地电阻一般不应大于多少欧姆？', o: ['4Ω','10Ω','30Ω','100Ω'], a: 0 },
+    { t: '下列哪种灭火器不适用于电气火灾？', o: ['二氧化碳灭火器','干粉灭火器','泡沫灭火器','四氯化碳灭火器'], a: 2 },
+    { t: '绝缘手套使用前应检查的项目不包括？', o: ['外观有无破损','是否在有效期内','有无漏气','手套的颜色'], a: 3 },
+    { t: '停电作业时，应在开关手柄上悬挂什么标示牌？', o: ['禁止合闸，有人工作','在此工作','从此上下','止步，高压危险'], a: 0 },
+    { t: '交流电压表测量电压时应与被测电路如何连接？', o: ['串联','并联','混联','短路'], a: 1 },
+    { t: '人体触电后，对人体伤害最严重的是？', o: ['烧伤','电击','电伤','电弧'], a: 1 },
+  ];
+  const judgeBank = [
+    { t: '电气设备发生火灾时，应立即用水扑救。', a: 1 },
+    { t: '停电作业必须执行停电、验电、装设接地线、悬挂标示牌的技术措施。', a: 0 },
+    { t: '绝缘工具可以超期使用，只要外观完好即可。', a: 1 },
+    { t: '发现有人触电时，应立即用干燥的木棒等绝缘物使触电者脱离电源。', a: 0 },
+    { t: '同一台变压器供电的系统中，可以一部分设备接地、一部分设备接零。', a: 1 },
+    { t: '万用表使用完毕后，应将转换开关置于交流电压最高档或空档。', a: 0 },
+  ];
+
+  function buildQuestions() {
+    const list = [];
+    // 40 单选
+    for (let i = 0; i < 40; i++) {
+      const b = singleBank[i % singleBank.length];
+      list.push({ id: i + 1, type: 'single', title: b.t, options: b.o, answer: [b.a] });
+    }
+    // 20 判断
+    for (let i = 0; i < 20; i++) {
+      const b = judgeBank[i % judgeBank.length];
+      list.push({ id: 41 + i, type: 'judge', title: b.t, options: ['正确', '错误'], answer: [b.a] });
+    }
+    // 20 多选
+    for (let i = 0; i < 20; i++) {
+      const b = singleBank[i % singleBank.length];
+      list.push({ id: 61 + i, type: 'multiple', title: b.t + '（多选）', options: b.o, answer: [0, 1] });
+    }
+    return list;
+  }
+  const questions = buildQuestions();
+  const TOTAL = questions.length;
+
+  // ========== 答题状态 ==========
+  const answers = {};   // qid -> [selected indices]
+  const marked = new Set();
+  let curIdx = 0;
+
+  function isAnswered(qid) {
+    const a = answers[qid];
+    return Array.isArray(a) && a.length > 0;
+  }
+
+  function renderGrid() {
+    const grid = document.getElementById('q-grid');
+    grid.innerHTML = questions.map((q, i) => {
+      let cls = 'q-num';
+      if (i === curIdx) cls += ' current';
+      else if (marked.has(q.id)) cls += ' marked';
+      else if (isAnswered(q.id)) cls += ' answered';
+      return `<div class="${cls}" onclick="goQ(${i})">${i + 1}</div>`;
+    }).join('');
+    const answeredCount = questions.filter(q => isAnswered(q.id)).length;
+    document.getElementById('answered-count').textContent = answeredCount;
+  }
+
+  function renderQuestion() {
+    const q = questions[curIdx];
+    const typeTag = { single: '单选题', multiple: '多选题', judge: '判断题' }[q.type];
+    const titleEl = document.getElementById('q-title');
+    titleEl.innerHTML = `<span class="q-type-tag ${q.type}">${typeTag}</span>${curIdx + 1}. ${q.title}`;
+
+    const opts = document.getElementById('q-options');
+    const selected = answers[q.id] || [];
+    const isMulti = q.type === 'multiple';
+    const labels = ['A', 'B', 'C', 'D', 'E', 'F'];
+    opts.innerHTML = q.options.map((opt, i) => {
+      const sel = selected.includes(i) ? 'selected' : '';
+      const multiCls = isMulti ? 'multiple' : '';
+      return `<div class="option ${sel} ${multiCls}" onclick="selectOption(${i})">
+        <span class="opt-label">${labels[i]}</span><span>${opt}</span>
+      </div>`;
+    }).join('');
+
+    const markBtn = document.getElementById('mark-btn');
+    markBtn.className = 'mark-btn' + (marked.has(q.id) ? ' active' : '');
+    markBtn.textContent = marked.has(q.id) ? '🚩 已标记' : '🚩 标记本题';
+
+    document.getElementById('cur-num').textContent = curIdx + 1;
+    document.getElementById('prev-btn').disabled = curIdx === 0;
+    document.getElementById('prev-btn').style.opacity = curIdx === 0 ? 0.5 : 1;
+    document.getElementById('next-btn').textContent = curIdx === TOTAL - 1 ? '交卷' : '下一题';
+    renderGrid();
+  }
+
+  function selectOption(i) {
+    const q = questions[curIdx];
+    const cur = answers[q.id] || [];
+    if (q.type === 'multiple') {
+      const idx = cur.indexOf(i);
+      if (idx >= 0) cur.splice(idx, 1); else cur.push(i);
+      answers[q.id] = cur;
+    } else {
+      answers[q.id] = [i];
+    }
+    renderQuestion();
+  }
+
+  function toggleMark() {
+    const qid = questions[curIdx].id;
+    if (marked.has(qid)) marked.delete(qid); else marked.add(qid);
+    renderQuestion();
+  }
+
+  function goQ(i) { curIdx = i; renderQuestion(); }
+  function prevQ() { if (curIdx > 0) { curIdx--; renderQuestion(); } }
+  function nextQ() {
+    if (curIdx < TOTAL - 1) { curIdx++; renderQuestion(); }
+    else openSubmitConfirm();
+  }
+
+  // ========== 倒计时 ==========
+  let remain = 60 * 60; // 60分钟
+  const timerEl = document.getElementById('timer');
+  const timer = setInterval(() => {
+    remain--;
+    const m = String(Math.floor(remain / 60)).padStart(2, '0');
+    const s = String(remain % 60).padStart(2, '0');
+    timerEl.textContent = m + ':' + s;
+    if (remain <= 300) timerEl.classList.add('warning');
+    if (remain <= 0) {
+      clearInterval(timer);
+      document.getElementById('modal-timeout').classList.add('show');
+    }
+  }, 1000);
+
+  // ========== 交卷 ==========
+  function openSubmitConfirm() {
+    const unanswered = questions.filter(q => !isAnswered(q.id)).length;
+    document.getElementById('unanswered-num').textContent = unanswered;
+    document.getElementById('modal-submit').classList.add('show');
+  }
+  function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+  document.getElementById('modal-submit').addEventListener('click', e => {
+    if (e.target.id === 'modal-submit') closeModal('modal-submit');
+  });
+
+  function doSubmit() {
+    clearInterval(timer);
+    // 判分
+    let correct = 0;
+    questions.forEach(q => {
+      const a = (answers[q.id] || []).slice().sort().join(',');
+      const c = q.answer.slice().sort().join(',');
+      if (a === c) correct++;
+    });
+    const score = Math.round(correct / TOTAL * 100);
+    const passed = score >= 60;
+    const wrong = TOTAL - correct;
+
+    // 结果页通过 sessionStorage 传递
+    sessionStorage.setItem('exam_result', JSON.stringify({
+      examId, score, correct, wrong, passed, total: TOTAL
+    }));
+
+    // 合格：新增档案记录
+    if (passed) {
+      let records = [];
+      try { records = JSON.parse(sessionStorage.getItem('archive_records') || '[]'); } catch(e) {}
+      const now = new Date();
+      const certNo = 'CE' + now.getFullYear() + String(now.getMonth()+1).padStart(2,'0') + String(records.length + 1).padStart(4,'0');
+      records.push({
+        id: 'r' + Date.now(),
+        workType: '低压电工作业',
+        finishTime: now.toISOString().slice(0,10),
+        score: score,
+        certNo: certNo,
+        voided: false
+      });
+      sessionStorage.setItem('archive_records', JSON.stringify(records));
+    } else {
+      // 不合格：扣减重考次数
+      let retriesMap = {};
+      try { retriesMap = JSON.parse(sessionStorage.getItem('exam_retries') || '{}'); } catch(e) {}
+      const cur = retriesMap[examId];
+      // 共 2 次考试机会：首次不合格后剩余 1 次
+      retriesMap[examId] = cur === undefined ? 1 : Math.max(0, cur - 1);
+      sessionStorage.setItem('exam_retries', JSON.stringify(retriesMap));
+    }
+
+    window.location.href = '考试结果.html';
+  }
+
+  // 初始化
+  renderQuestion();
+</script>
+</body>
+</html>
