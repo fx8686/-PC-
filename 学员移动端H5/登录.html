@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#1677ff">
+<title>登录 - 特殊工种延期教育系统（移动端）</title>
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/login.css">
+</head>
+<body data-page="login">
+
+<div class="app login-app">
+  <!-- 品牌区 -->
+  <div class="login-hero">
+    <div class="logo">🛡️</div>
+    <h1>特殊工种延期教育系统</h1>
+    <p>学员移动端 · 继续教育学习平台</p>
+    <p style="margin-top:10px;font-size:12px;color:rgba(255,255,255,0.85);">📞 咨询电话：<a href="tel:05305169991" style="color:#fff8b0;text-decoration:underline;">0530-5169991</a></p>
+  </div>
+
+  <!-- 登录 / 注册卡片 -->
+  <div class="login-card">
+    <div class="auth-tabs">
+      <button type="button" class="auth-tab active" data-tab="login">登录</button>
+      <button type="button" class="auth-tab" data-tab="register">注册</button>
+    </div>
+
+    <!-- ==================== 登录表单 ==================== -->
+    <form id="form-login" novalidate>
+      <div class="field" id="f-account">
+        <label class="field-label" for="account">登录账号<span class="req">*</span></label>
+        <input class="input" id="account" type="text" placeholder="请输入账号" autocomplete="username">
+        <div class="err">请输入账号</div>
+      </div>
+
+      <div class="field" id="f-password">
+        <label class="field-label" for="password">登录密码<span class="req">*</span></label>
+        <div class="input-affix">
+          <input class="input" id="password" type="password" placeholder="请输入密码" autocomplete="current-password">
+          <button type="button" class="affix-btn" id="toggle-pwd">显示</button>
+        </div>
+        <div class="err">请输入密码</div>
+      </div>
+
+      <label class="agree-row">
+        <input type="checkbox" id="agree-login">
+        <span>我已阅读并同意《学员服务协议》，并确认所填信息真实有效</span>
+      </label>
+
+      <button class="btn btn-primary btn-block" id="btn-login" type="submit" disabled>登 录</button>
+      <a class="forgot-link" href="重置密码.html">忘记密码？</a>
+      <div class="demo-tip">演示账号：admin &nbsp;/&nbsp; 123456</div>
+    </form>
+
+    <!-- ==================== 注册表单 ==================== -->
+    <form id="form-register" class="hide" novalidate>
+      <div class="field" id="f-r-name">
+        <label class="field-label" for="r-name">真实姓名<span class="req">*</span></label>
+        <input class="input" id="r-name" type="text" placeholder="请填写身份证上的姓名">
+        <div class="err">请填写真实姓名</div>
+      </div>
+
+      <div class="field" id="f-r-gender">
+        <label class="field-label">性别<span class="req">*</span></label>
+        <div class="radio-group" id="r-gender">
+          <button type="button" class="radio-chip" data-value="男">男</button>
+          <button type="button" class="radio-chip" data-value="女">女</button>
+        </div>
+        <div class="err">请选择性别</div>
+      </div>
+
+      <div class="field" id="f-r-idcard">
+        <label class="field-label" for="r-idcard">身份证号<span class="req">*</span></label>
+        <input class="input" id="r-idcard" type="text" maxlength="18" placeholder="请输入 18 位身份证号">
+        <div class="err">请输入身份证号</div>
+      </div>
+
+      <div class="field" id="f-r-phone">
+        <label class="field-label" for="r-phone">手机号码<span class="req">*</span></label>
+        <input class="input" id="r-phone" type="tel" maxlength="11" inputmode="numeric" placeholder="用于接收考试与证书通知">
+        <div class="err">请输入手机号</div>
+      </div>
+
+      <div class="field" id="f-r-account">
+        <label class="field-label" for="r-account">登录账号<span class="req">*</span></label>
+        <input class="input" id="r-account" type="text" placeholder="请设置登录账号" autocomplete="username">
+        <div class="err">请设置登录账号</div>
+      </div>
+
+      <div class="field" id="f-r-pwd">
+        <label class="field-label" for="r-pwd">登录密码<span class="req">*</span></label>
+        <div class="input-affix">
+          <input class="input" id="r-pwd" type="password" maxlength="20" placeholder="6-20 位密码" autocomplete="new-password">
+          <button type="button" class="affix-btn" id="toggle-r-pwd">显示</button>
+        </div>
+        <div class="err">请设置密码</div>
+      </div>
+
+      <div class="field" id="f-r-pwd2">
+        <label class="field-label" for="r-pwd2">确认密码<span class="req">*</span></label>
+        <input class="input" id="r-pwd2" type="password" maxlength="20" placeholder="请再次输入密码" autocomplete="new-password">
+        <div class="err">请再次输入密码</div>
+      </div>
+
+      <label class="agree-row">
+        <input type="checkbox" id="agree-reg">
+        <span>我已阅读并同意《学员服务协议》，并承诺所提交的报名材料真实有效</span>
+      </label>
+
+      <button class="btn btn-primary btn-block" id="btn-register" type="submit" disabled>注 册</button>
+    </form>
+  </div>
+
+  <div class="login-footer">© 2025 特殊工种延期教育系统 · 移动端演示原型</div>
+</div>
+
+<!-- 提示弹窗 -->
+<div class="mask center" id="mask-tip">
+  <div class="dialog">
+    <div class="dialog-icon" id="tip-icon">!</div>
+    <div class="dialog-title" id="tip-title">提示</div>
+    <div class="dialog-text" id="tip-text"></div>
+    <div class="dialog-actions">
+      <button class="btn btn-primary" id="tip-ok" type="button">我知道了</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/util.js"></script>
+<script src="js/store.js"></script>
+<script src="js/api.js"></script>
+<script src="js/login.js"></script>
+</body>
+</html>

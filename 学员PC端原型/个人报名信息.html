@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>个人报名信息 - 特殊工种延期教育系统</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+    background: #f0f2f5;
+    color: #262626;
+    min-height: 100vh;
+  }
+  a { text-decoration: none; color: inherit; }
+
+  /* ===== 顶部导航栏 ===== */
+  .topbar {
+    position: fixed; top: 0; left: 0; right: 0; height: 60px;
+    background: #fff; border-bottom: 1px solid #f0f0f0;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px; z-index: 100;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .brand { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 600; color: #1f1f1f; }
+  .brand .logo { width: 32px; height: 32px; border-radius: 8px; background: #1677ff; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .user { display: flex; align-items: center; gap: 16px; color: #595959; font-size: 14px; }
+  .user .avatar { width: 32px; height: 32px; border-radius: 50%; background: #e6f4ff; color: #1677ff; display: flex; align-items: center; justify-content: center; font-weight: 600; }
+  .user .divider { width: 1px; height: 16px; background: #e8e8e8; }
+  .logout { background: none; border: none; color: #8c8c8c; cursor: pointer; font-size: 14px; }
+  .logout:hover { color: #ff4d4f; }
+
+  /* ===== 左侧菜单栏 ===== */
+  .sidebar {
+    position: fixed; top: 60px; left: 0; bottom: 0; width: 220px;
+    background: #001529; color: rgba(255,255,255,0.75);
+    padding: 12px 0; overflow-y: auto; z-index: 99;
+  }
+  .menu-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 24px; font-size: 14px; cursor: pointer;
+    border-left: 3px solid transparent; transition: all 0.2s;
+  }
+  .menu-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
+  .menu-item.active { background: #1677ff; color: #fff; border-left-color: #fff; }
+  .menu-item.disabled { color: rgba(255,255,255,0.3); cursor: not-allowed; }
+  .menu-item.disabled:hover { background: transparent; color: rgba(255,255,255,0.3); }
+  .menu-item .icon { font-size: 16px; width: 20px; text-align: center; }
+
+  /* ===== 内容区 ===== */
+  .main { margin-left: 220px; margin-top: 60px; padding: 24px; min-height: calc(100vh - 60px); }
+  .page-title { font-size: 20px; font-weight: 600; margin-bottom: 16px; color: #1f1f1f; }
+
+  /* 温馨提示 */
+  .warm-tip {
+    background: #fffbe6; border: 1px solid #ffe58f; color: #d48806;
+    padding: 12px 16px; border-radius: 8px; font-size: 14px;
+    margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+  }
+
+  .card {
+    background: #fff; border-radius: 10px; padding: 24px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04); margin-bottom: 16px;
+  }
+  .card-title {
+    font-size: 16px; font-weight: 600; color: #1f1f1f; margin-bottom: 20px;
+    padding-bottom: 12px; border-bottom: 1px solid #f5f5f5;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .card-title .title-left { display: flex; align-items: center; gap: 8px; }
+
+  /* 状态标签 */
+  .tag { display: inline-flex; align-items: center; padding: 2px 10px; border-radius: 4px; font-size: 12px; font-weight: 500; }
+  .tag-draft { background: #f5f5f5; color: #595959; border: 1px solid #d9d9d9; }
+  .tag-pending { background: #fff7e6; color: #d46b08; border: 1px solid #ffd591; }
+  .tag-approved { background: #f6ffed; color: #389e0d; border: 1px solid #b7eb8f; }
+  .tag-rejected { background: #fff1f0; color: #cf1322; border: 1px solid #ffa39e; }
+  .tag-paid { background: #e6f4ff; color: #0958d9; border: 1px solid #91caff; }
+  .tag-dot { width: 6px; height: 6px; border-radius: 50%; margin-right: 6px; }
+  .tag-draft .tag-dot { background: #8c8c8c; }
+  .tag-pending .tag-dot { background: #fa8c16; }
+  .tag-approved .tag-dot { background: #52c41a; }
+  .tag-rejected .tag-dot { background: #ff4d4f; }
+  .tag-paid .tag-dot { background: #1677ff; }
+
+  /* 表单 */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 24px; }
+  .form-item.full { grid-column: 1 / -1; }
+  .form-item label { display: block; font-size: 14px; color: #262626; margin-bottom: 8px; }
+  .required::before { content: "*"; color: #ff4d4f; margin-right: 4px; }
+  .input-wrap input, .input-wrap select {
+    width: 100%; height: 40px; padding: 0 12px;
+    border: 1px solid #d9d9d9; border-radius: 6px; font-size: 14px;
+    outline: none; transition: all 0.2s; background: #fff;
+  }
+  .input-wrap select { cursor: pointer; }
+  .input-wrap input:hover, .input-wrap select:hover { border-color: #4096ff; }
+  .input-wrap input:focus, .input-wrap select:focus { border-color: #1677ff; box-shadow: 0 0 0 2px rgba(22,119,255,0.12); }
+  .input-wrap input:disabled, .input-wrap select:disabled { background: #f5f5f5; color: #8c8c8c; cursor: not-allowed; }
+  .input-wrap.readonly input { background: #fafafa; color: #595959; }
+  .hint { font-size: 12px; color: #8c8c8c; margin-top: 6px; }
+  .date-range { display: flex; gap: 12px; align-items: center; }
+  .date-range .input-wrap { flex: 1; }
+  .date-range .sep { color: #8c8c8c; font-size: 14px; }
+
+  /* 上传组件 */
+  .upload-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .upload-col { display: flex; flex-direction: column; }
+  .uploader {
+    border: 1px dashed #d9d9d9; border-radius: 8px;
+    height: 160px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.2s; position: relative;
+    background: #fafafa;
+  }
+  .uploader:hover { border-color: #1677ff; background: #f0f7ff; }
+  .uploader.disabled { cursor: not-allowed; opacity: 0.6; }
+  .uploader.disabled:hover { border-color: #d9d9d9; background: #fafafa; }
+  .uploader .up-icon { font-size: 32px; color: #bfbfbf; margin-bottom: 6px; }
+  .uploader .up-text { font-size: 13px; color: #595959; margin-bottom: 2px; }
+  .uploader .up-hint { font-size: 11px; color: #8c8c8c; }
+  .uploader input[type=file] { display: none; }
+  .upload-preview {
+    width: 100%; height: 100%; border-radius: 8px; object-fit: cover;
+  }
+  .upload-actions {
+    position: absolute; top: 8px; right: 8px; display: flex; gap: 6px;
+  }
+  .upload-actions button {
+    width: 26px; height: 26px; border: none; border-radius: 50%;
+    background: rgba(0,0,0,0.55); color: #fff; cursor: pointer;
+    font-size: 13px; display: flex; align-items: center; justify-content: center;
+  }
+  .upload-actions button:hover { background: rgba(0,0,0,0.75); }
+  .upload-label { font-size: 14px; color: #262626; margin-bottom: 8px; font-weight: 500; }
+
+  /* 按钮 */
+  .btn { height: 38px; padding: 0 20px; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; transition: all 0.2s; font-weight: 500; }
+  .btn-primary { background: #1677ff; color: #fff; }
+  .btn-primary:hover:not(:disabled) { background: #4096ff; }
+  .btn-primary:active:not(:disabled) { background: #0958d9; }
+  .btn-primary:disabled { background: #bfbfbf; cursor: not-allowed; }
+  .btn-default { background: #fff; color: #595959; border: 1px solid #d9d9d9; }
+  .btn-default:hover:not(:disabled) { color: #1677ff; border-color: #1677ff; }
+  .btn-default:disabled { color: #bfbfbf; cursor: not-allowed; border-color: #e8e8e8; }
+  .btn-link { background: none; border: none; color: #1677ff; cursor: pointer; font-size: 13px; padding: 0 8px; }
+  .btn-link:hover { text-decoration: underline; }
+  .btn-link.danger { color: #ff4d4f; }
+
+  .btn-add {
+    background: #fff; color: #1677ff; border: 1px dashed #1677ff;
+    width: 100%; height: 48px; border-radius: 8px; font-size: 15px;
+    cursor: pointer; transition: all 0.2s; font-weight: 500;
+  }
+  .btn-add:hover { background: #e6f4ff; }
+
+  /* ========== 共用材料区 ========== */
+  .shared-tip {
+    background: #fffbe6; border: 1px solid #ffe58f; border-left: 4px solid #faad14;
+    color: #614700; padding: 12px 16px; border-radius: 6px; font-size: 13px;
+    margin-bottom: 18px; display: flex; align-items: flex-start; gap: 10px; line-height: 1.7;
+  }
+  .shared-tip .ico { font-size: 18px; flex-shrink: 0; }
+  .shared-tip b { color: #d48806; }
+  .shared-materials .upload-col { background: #fafcff; border-radius: 8px; padding: 12px; }
+  .shared-section-title {
+    font-size: 15px; font-weight: 600; color: #1f1f1f;
+    padding-bottom: 12px; margin-bottom: 14px; border-bottom: 1px solid #f5f5f5;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .shared-section-title .badge {
+    background: #fff7e6; color: #d48806; border: 1px solid #ffd591;
+    font-size: 12px; font-weight: 500; padding: 2px 8px; border-radius: 4px;
+  }
+
+  /* 批量提交底部栏 */
+  .batch-bar {
+    position: sticky; bottom: 0; z-index: 50;
+    background: #fff; border-top: 1px solid #f0f0f0;
+    padding: 14px 24px; display: flex; justify-content: space-between; align-items: center;
+    box-shadow: 0 -2px 8px rgba(0,0,0,0.04); border-radius: 0 0 10px 10px; margin-top: -1px;
+  }
+  .batch-bar .stat { font-size: 13px; color: #595959; }
+  .batch-bar .stat .num { color: #1677ff; font-weight: 600; font-size: 15px; margin: 0 4px; }
+  .batch-bar .stat .num.warn { color: #fa8c16; }
+  .batch-bar .stat .num.ok { color: #52c41a; }
+
+  /* 工种卡片 */
+  .work-card {
+    border: 1px solid #f0f0f0; border-radius: 8px; margin-bottom: 14px;
+    overflow: hidden; background: #fafafa;
+  }
+  .work-card-head {
+    padding: 12px 18px; background: #fff; border-bottom: 1px solid #f0f0f0;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .work-card-head .title {
+    font-size: 14px; font-weight: 600; color: #1f1f1f;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .work-card-head .title .seq {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: #1677ff; color: #fff; font-size: 12px; font-weight: 600;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .work-card-body { padding: 18px; background: #fff; }
+
+  /* 多证书图片网格 */
+  .cert-imgs-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 8px;
+  }
+  .cert-img-slot {
+    border: 1px dashed #d9d9d9; border-radius: 6px;
+    aspect-ratio: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.2s; position: relative;
+    background: #fafafa;
+  }
+  .cert-img-slot:hover { border-color: #1677ff; background: #f0f7ff; }
+  .cert-img-slot .ci-icon { font-size: 22px; color: #bfbfbf; margin-bottom: 2px; }
+  .cert-img-slot .ci-text { font-size: 11px; color: #8c8c8c; }
+  .cert-img-slot img { width: 100%; height: 100%; object-fit: cover; border-radius: 5px; }
+  .cert-img-slot.has-img { border-style: solid; border-color: #f0f0f0; }
+  .cert-img-slot .ci-actions {
+    position: absolute; top: 4px; right: 4px; display: flex; gap: 3px;
+  }
+  .cert-img-slot .ci-actions button {
+    width: 20px; height: 20px; border: none; border-radius: 50%;
+    background: rgba(0,0,0,0.55); color: #fff; cursor: pointer;
+    font-size: 11px; display: flex; align-items: center; justify-content: center;
+  }
+  .cert-img-slot .ci-actions button:hover { background: rgba(0,0,0,0.75); }
+
+  /* ========== 历史记录列表 ========== */
+  .history-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+  .history-tab {
+    padding: 6px 14px; border-radius: 20px; font-size: 13px;
+    background: #fff; border: 1px solid #f0f0f0; color: #595959;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .history-tab:hover { color: #1677ff; border-color: #91caff; }
+  .history-tab.active { background: #1677ff; color: #fff; border-color: #1677ff; }
+  .history-tab .cnt { margin-left: 4px; opacity: 0.7; }
+
+  .history-card {
+    border: 1px solid #f0f0f0; border-radius: 8px; margin-bottom: 12px;
+    overflow: hidden; background: #fff; transition: all 0.2s;
+  }
+  .history-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .history-head {
+    padding: 14px 20px; background: #fafafa; border-bottom: 1px solid #f0f0f0;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .history-head .title {
+    font-size: 15px; font-weight: 600; color: #1f1f1f;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .history-head .title .badge-num {
+    background: #1677ff; color: #fff; font-size: 12px; font-weight: 500;
+    padding: 2px 8px; border-radius: 10px;
+  }
+  .history-body { padding: 16px 20px; }
+  .history-kv-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px 24px;
+  }
+  .history-kv-grid .kv { font-size: 13px; }
+  .history-kv-grid .kv .k { color: #8c8c8c; margin-right: 6px; }
+  .history-kv-grid .kv .v { color: #262626; font-weight: 500; }
+
+  .history-reject-box {
+    margin-top: 12px; padding: 10px 14px; border-radius: 6px;
+    background: #fff2f0; border: 1px solid #ffccc7; color: #cf1322;
+    font-size: 13px; line-height: 1.6;
+  }
+  .history-reject-box b { color: #ff4d4f; }
+
+  .history-actions {
+    padding: 12px 20px; border-top: 1px solid #f5f5f5;
+    display: flex; justify-content: flex-end; gap: 8px;
+  }
+
+  .empty-state {
+    text-align: center; padding: 40px 20px; color: #8c8c8c;
+    background: #fafafa; border-radius: 8px; margin-bottom: 16px;
+  }
+  .empty-state .ico { font-size: 40px; margin-bottom: 10px; }
+
+  /* 弹窗 */
+  .modal-mask { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 1000; align-items: center; justify-content: center; }
+  .modal-mask.show { display: flex; }
+  .modal { background: #fff; border-radius: 10px; width: 420px; max-width: 90vw; box-shadow: 0 12px 40px rgba(0,0,0,0.2); overflow: hidden; animation: pop 0.2s ease; }
+  @keyframes pop { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .modal-header { padding: 16px 20px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; justify-content: space-between; }
+  .modal-title { font-size: 16px; font-weight: 600; color: #1f1f1f; }
+  .modal-close { cursor: pointer; color: #8c8c8c; font-size: 20px; line-height: 1; background: none; border: none; }
+  .modal-close:hover { color: #262626; }
+  .modal-body { padding: 24px 20px; }
+  .modal-icon { width: 56px; height: 56px; border-radius: 50%; background: #f6ffed; color: #52c41a; display: flex; align-items: center; justify-content: center; font-size: 30px; margin: 0 auto 14px; }
+  .modal-icon.info { background: #e6f4ff; color: #1677ff; }
+  .modal-body p { text-align: center; color: #262626; font-size: 15px; line-height: 1.6; }
+  .modal-footer { padding: 12px 20px 20px; text-align: center; }
+  .modal-footer .btn { width: 120px; height: 38px; }
+
+  /* 详情弹窗（大尺寸） */
+  .modal-detail { width: 720px; max-width: 94vw; max-height: 85vh; display: flex; flex-direction: column; }
+  .modal-detail .modal-body { overflow-y: auto; flex: 1; }
+  .detail-section { margin-bottom: 20px; }
+  .detail-section h4 {
+    font-size: 14px; font-weight: 600; color: #1f1f1f;
+    padding-bottom: 10px; margin-bottom: 12px; border-bottom: 1px solid #f5f5f5;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .detail-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px 24px; }
+  .detail-grid .kv { font-size: 13px; }
+  .detail-grid .kv .k { color: #8c8c8c; margin-right: 6px; }
+  .detail-grid .kv .v { color: #262626; font-weight: 500; }
+  .detail-imgs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .detail-imgs .di-item { text-align: center; }
+  .detail-imgs .di-item img { width: 100%; height: 80px; object-fit: cover; border-radius: 6px; border: 1px solid #f0f0f0; cursor: pointer; }
+  .detail-imgs .di-item .di-label { font-size: 11px; color: #8c8c8c; margin-top: 4px; }
+  .detail-imgs .di-item.no-img img { display: none; }
+  .detail-imgs .di-item.no-img {
+    height: 80px; border: 1px dashed #d9d9d9; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center; color: #bfbfbf; font-size: 12px;
+  }
+  .detail-imgs .di-item.no-img .di-label { margin-top: 84px; }
+  .detail-work-block {
+    border: 1px solid #f0f0f0; border-radius: 8px; padding: 14px 16px; margin-bottom: 10px;
+    background: #fafafa;
+  }
+  .detail-work-block .seq-title {
+    font-size: 13px; font-weight: 600; color: #1677ff; margin-bottom: 10px;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  /* ========== 新增报名弹窗（大尺寸） ========== */
+  .modal-new-app {
+    width: 960px; max-width: 95vw; max-height: 90vh;
+    display: flex; flex-direction: column;
+    border-radius: 14px;
+  }
+  .modal-new-app .modal-header {
+    padding: 18px 28px; background: #fafafa;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .modal-new-app .modal-title { display: flex; align-items: center; gap: 10px; }
+  .modal-new-app .modal-title .tag-inline {
+    font-size: 11px; font-weight: 500;
+    background: #fff7e6; color: #d48806; border: 1px solid #ffd591;
+    padding: 2px 8px; border-radius: 10px;
+  }
+  .modal-new-app .modal-body {
+    padding: 24px 28px; overflow-y: auto; flex: 1;
+  }
+  .modal-new-app .modal-footer {
+    padding: 16px 28px; border-top: 1px solid #f0f0f0;
+    background: #fafafa; display: flex; justify-content: space-between; align-items: center;
+    text-align: left;
+  }
+  .modal-new-app .modal-footer .stat-text {
+    font-size: 13px; color: #595959;
+  }
+  .modal-new-app .modal-footer .stat-text .num { color: #1677ff; font-weight: 600; margin: 0 3px; }
+  .modal-new-app .modal-footer .stat-text .num.ok { color: #52c41a; }
+  .modal-new-app .modal-footer .stat-text .num.warn { color: #fa8c16; }
+
+  /* 弹窗内共用材料区：去除外层 card 样式，直接展示 */
+  .modal-new-app .shared-tip { margin-bottom: 14px; }
+  .modal-new-app .work-card { background: #fafafa; }
+  .modal-new-app .work-card-body { background: #fff; }
+
+  /* Toast */
+  .toast {
+    position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
+    background: rgba(0,0,0,0.78); color: #fff; padding: 10px 20px;
+    border-radius: 6px; font-size: 14px; z-index: 2000;
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<!-- 顶部导航栏 -->
+<header class="topbar">
+  <div class="brand"><span class="logo">🛡️</span>特殊工种延期教育系统</div>
+  <div class="user">
+    <span class="avatar" id="user-avatar">张</span>
+    <span>学员：<span id="user-name">张三</span></span>
+    <span class="divider"></span>
+    <span>证件号：<span id="user-idcard">110***********1234</span></span>
+    <span class="divider"></span>
+    <button class="logout" onclick="logout()">退出登录</button>
+  </div>
+</header>
+
+<!-- 左侧菜单栏 -->
+<aside class="sidebar">
+  <a href="工作台.html" class="menu-item" style="display:none;"><span class="icon">🏠</span><span>首页工作台</span></a>
+  <a href="个人报名信息.html" class="menu-item active"><span class="icon">📋</span><span>个人报名信息</span></a>
+  <a href="我的课程.html" class="menu-item" data-lock="1"><span class="icon">📚</span><span>我的课程</span></a>
+  <a href="缴费订单.html" class="menu-item"><span class="icon">💰</span><span>缴费订单</span></a>
+  <a href="我的考试.html" class="menu-item" data-lock="1"><span class="icon">📝</span><span>我的考试</span></a>
+  <a href="继续教育档案.html" class="menu-item" style="display:none;"><span class="icon">📄</span><span>继续教育档案</span></a>
+  <a href="我的证书.html" class="menu-item" style="display:none;"><span class="icon">🎓</span><span>我的证书</span></a>
+  <a href="系统公告.html" class="menu-item" style="display:none;"><span class="icon">📢</span><span>系统公告</span></a>
+  <a href="帮助中心.html" class="menu-item" style="display:none;"><span class="icon">❓</span><span>帮助中心</span></a>
+</aside>
+
+<!-- 内容区 -->
+<main class="main">
+  <div class="page-title">个人报名信息</div>
+
+  <!-- 温馨提示 -->
+  <div class="warm-tip">
+    <span style="font-size:18px;">💡</span>
+    <span>查看历史报名记录，或发起全新报名申请。一次报名可包含多个工种，共用材料每次独立上传、不复用历史。</span>
+  </div>
+
+  <!-- ========== 模块 1：共用基础信息（固定可见） ========== -->
+  <section class="card">
+    <div class="card-title"><span class="title-left">👤 共用基础信息<span style="font-size:12px;color:#8c8c8c;font-weight:400;">（读取注册信息，全程固定可见，不可编辑）</span></span></div>
+    <div class="form-grid">
+      <div class="form-item">
+        <label>姓名</label>
+        <div class="input-wrap readonly"><input type="text" id="base-name" value="张三" disabled></div>
+      </div>
+      <div class="form-item">
+        <label>性别</label>
+        <div class="input-wrap readonly"><input type="text" id="base-gender" value="男" disabled></div>
+      </div>
+      <div class="form-item">
+        <label>身份证号</label>
+        <div class="input-wrap readonly"><input type="text" id="base-idcard" value="110101199001011234" disabled></div>
+      </div>
+      <div class="form-item">
+        <label>手机号</label>
+        <div class="input-wrap readonly"><input type="text" id="base-phone" value="138****8888" disabled></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 模块 2：历史报名记录列表 ========== -->
+  <section class="card">
+    <div class="card-title">
+      <span class="title-left">📋 历史报名记录</span>
+      <button class="btn btn-primary" onclick="openNewApplication()">＋ 新增报名</button>
+    </div>
+
+    <div class="history-tabs" id="history-tabs">
+      <button class="history-tab active" data-f="all">全部 <span class="cnt" id="hcnt-all">0</span></button>
+      <button class="history-tab" data-f="pending">待审核 <span class="cnt" id="hcnt-pending">0</span></button>
+      <button class="history-tab" data-f="approved">审核通过 <span class="cnt" id="hcnt-approved">0</span></button>
+      <button class="history-tab" data-f="paid">已缴费 <span class="cnt" id="hcnt-paid">0</span></button>
+      <button class="history-tab" data-f="rejected">已驳回 <span class="cnt" id="hcnt-rejected">0</span></button>
+    </div>
+
+    <div id="history-list"></div>
+  </section>
+
+</main>
+
+<!-- ========== 提交成功弹窗 ========== -->
+<div class="modal-mask" id="modal-success">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title">提交成功</span>
+      <button class="modal-close" onclick="closeModal('modal-success')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-icon">✓</div>
+      <p id="modal-success-text">您的报名信息已提交，请等待系统审核。</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="closeModal('modal-success')">我知道了</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 图片预览弹窗 ========== -->
+<div class="modal-mask" id="modal-img">
+  <div class="modal" style="width:auto;max-width:90vw;" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title" id="img-title">图片预览</span>
+      <button class="modal-close" onclick="closeImgModal()">×</button>
+    </div>
+    <div class="modal-body" style="padding:16px;max-height:70vh;overflow:auto;">
+      <img id="preview-img" src="" style="max-width:100%;max-height:65vh;display:block;border-radius:6px;">
+    </div>
+  </div>
+</div>
+
+<!-- ========== 删除确认弹窗 ========== -->
+<div class="modal-mask" id="modal-confirm">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title" id="confirm-title">确认操作</span>
+      <button class="modal-close" onclick="closeModal('modal-confirm')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-icon" id="confirm-icon" style="background:#fff1f0;color:#ff4d4f;">!</div>
+      <p id="confirm-text">确定要删除吗？</p>
+    </div>
+    <div class="modal-footer" style="display:flex;gap:10px;justify-content:center;">
+      <button class="btn btn-default" onclick="closeModal('modal-confirm')">取消</button>
+      <button class="btn btn-primary" id="confirm-ok" onclick="runConfirmAction()">确定</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 历史详情弹窗 ========== -->
+<div class="modal-mask" id="modal-detail">
+  <div class="modal modal-detail" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title">报名详情</span>
+      <button class="modal-close" onclick="closeModal('modal-detail')">×</button>
+    </div>
+    <div class="modal-body" id="detail-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeModal('modal-detail')">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 新增报名大弹窗 ========== -->
+<div class="modal-mask" id="modal-new-app">
+  <div class="modal modal-new-app" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title">
+        📝 新增报名申请
+        <span class="tag-inline">一次可添加多个工种 · 共用材料本次独立上传</span>
+      </span>
+      <button class="modal-close" onclick="closeNewApplication()">×</button>
+    </div>
+    <div class="modal-body" id="modal-new-body">
+
+      <!-- 共用证件与材料（本次独立上传，不复用历史） -->
+      <div class="shared-tip">
+        <span class="ico">📌</span>
+        <span>以下 <b>身份证正面 / 身份证反面 / 近三个月体检报告</b> 为本次报名所有工种的<b>共用材料</b>，仅需上传一次，提交时自动同步应用到本次报名的每一个工种档案中。<br>
+        <b>每次发起新的报名申请均需重新上传上述材料</b>，不复用历史报名的材料快照。</span>
+      </div>
+
+      <div class="shared-section-title">
+        共用证件与材料
+        <span class="badge">本次独立 · 不复用历史</span>
+      </div>
+
+      <div class="upload-row">
+        <div class="upload-col">
+          <div class="upload-label">身份证正面（人像面）<span style="color:#ff4d4f;">*</span></div>
+          <label class="uploader" id="shared-up-idFront">
+            <input type="file" accept="image/png,image/jpeg" onchange="handleSharedUpload(event,'idFront')">
+            <div class="up-icon">🪪</div>
+            <div class="up-text">点击上传身份证正面</div>
+            <div class="up-hint">人像面，JPG / PNG，≤ 5MB</div>
+          </label>
+        </div>
+        <div class="upload-col">
+          <div class="upload-label">身份证反面（国徽面）<span style="color:#ff4d4f;">*</span></div>
+          <label class="uploader" id="shared-up-idBack">
+            <input type="file" accept="image/png,image/jpeg" onchange="handleSharedUpload(event,'idBack')">
+            <div class="up-icon">🪪</div>
+            <div class="up-text">点击上传身份证反面</div>
+            <div class="up-hint">国徽面，JPG / PNG，≤ 5MB</div>
+          </label>
+        </div>
+        <div class="upload-col">
+          <div class="upload-label">近三个月体检报告照片<span style="color:#ff4d4f;">*</span></div>
+          <label class="uploader" id="shared-up-health">
+            <input type="file" accept="image/png,image/jpeg" onchange="handleSharedUpload(event,'healthReport')">
+            <div class="up-icon">📋</div>
+            <div class="up-text">点击上传体检报告</div>
+            <div class="up-hint">近三个月内，JPG / PNG，≤ 5MB</div>
+          </label>
+        </div>
+      </div>
+      <div style="margin-top:14px;">
+        <button type="button" class="btn btn-default" onclick="downloadTemplate()" style="height:34px;font-size:13px;">⬇ 下载体检表模板</button>
+        <span class="hint" style="margin-left:10px;">请下载模板，填写后拍照上传</span>
+      </div>
+
+      <div style="height:20px;"></div>
+
+      <!-- 本次报名工种列表 -->
+      <div class="shared-section-title">
+        本次报名工种信息
+        <span class="badge" style="background:#e6f4ff;color:#1677ff;border-color:#91caff;">支持添加多个工种</span>
+      </div>
+      <div id="work-items-container"></div>
+      <button class="btn-add" onclick="addWorkItem()">＋ 继续添加工种</button>
+
+    </div>
+    <div class="modal-footer">
+      <div class="stat-text">
+        当前 <span class="num" id="stat-workitems">0</span> 个工种 ·
+        共用材料 <span class="num" id="stat-shared">0 / 3</span>
+      </div>
+      <div>
+        <button class="btn btn-default" onclick="closeNewApplication()">取消</button>
+        <button class="btn btn-primary" id="btn-submit-all" onclick="submitAll()" disabled style="min-width:180px;">
+          提交审核（<span id="submit-count">0</span> 个工种）
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =============================================================
+   数据模型：
+   archive = {
+     id, status: 'draft'|'pending'|'approved'|'rejected',
+     submittedAt, reviewTime, rejectReason,
+     paid, paidAt,
+     idFront, idBack, healthReport,     ← 本次报名独立共用材料
+     workItems: [                       ← 多工种嵌套
+       { workType, certNo, validFrom, validTo, certImgs: [] }
+     ],
+     name, idCard, phone, gender
+   }
+   ============================================================= */
+
+/* ========== 工具 & 全局 ========== */
+function getCurrentUser() {
+  try { return JSON.parse(sessionStorage.getItem('current_user') || 'null'); } catch(e) { return null; }
+}
+const currentUser = getCurrentUser() || { name:'张三', gender:'男', idCard:'110101199001011234', phone:'13800138000' };
+
+const WORK_TYPES = ['低压电工作业','高压电工作业','焊接与热切割作业','高处作业','制冷与空调作业','煤矿安全作业'];
+const STATUS_CONFIG = {
+  draft:    { cls:'tag-draft',    text:'未提交' },
+  pending:  { cls:'tag-pending',  text:'待审核' },
+  approved: { cls:'tag-approved', text:'审核通过' },
+  paid:     { cls:'tag-paid',     text:'已缴费' },
+  rejected: { cls:'tag-rejected', text:'已驳回' }
+};
+const ORDER_MAP = { draft:0, pending:1, approved:2, paid:3, rejected:4 };
+
+function getArchives() {
+  try { return JSON.parse(sessionStorage.getItem('signup_archives') || '[]'); } catch(e) { return []; }
+}
+function saveArchives(list) {
+  sessionStorage.setItem('signup_archives', JSON.stringify(list));
+}
+
+function pad(n) { return n < 10 ? '0'+n : ''+n; }
+function nowStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+/* ========== 种子数据 ========== */
+function ensureDemoData() {
+  // 新 key，确保升级后重建
+  if (sessionStorage.getItem('pc_signup_v3')) return;
+  sessionStorage.setItem('pc_signup_v3', '1');
+  sessionStorage.removeItem('pc_signup_seeded_v1');
+  sessionStorage.removeItem('pay_demo_seeded_v2');
+  sessionStorage.removeItem('signup_shared_materials');
+  sessionStorage.removeItem('admin_seed_v1');
+  sessionStorage.removeItem('admin_seed_v2');
+
+  const demo = [
+    {
+      id:'REG2025010001', status:'paid', paid:true, paidAt:'2025-09-03 09:20',
+      submittedAt:'2025-09-02 10:12', reviewTime:'2025-09-02 15:40', rejectReason:null,
+      idFront:'', idBack:'', healthReport:'',
+      workItems:[
+        { workType:'低压电工作业', certNo:'TZ202111000123', validFrom:'2022-08-01', validTo:'2027-08-01', certImgs:[] },
+        { workType:'高处作业',     certNo:'TZ202411000321', validFrom:'2021-08-01', validTo:'2026-08-01', certImgs:[] }
+      ],
+      name:'张三', idCard:currentUser.idCard, phone:currentUser.phone, gender:currentUser.gender
+    },
+    {
+      id:'REG2025010002', status:'approved', paid:false,
+      submittedAt:'2025-10-05 14:30', reviewTime:'2025-10-06 11:20', rejectReason:null,
+      idFront:'', idBack:'', healthReport:'',
+      workItems:[
+        { workType:'高压电工作业', certNo:'TZ202111000456', validFrom:'2022-09-01', validTo:'2027-09-01', certImgs:[] }
+      ],
+      name:'张三', idCard:currentUser.idCard, phone:currentUser.phone, gender:currentUser.gender
+    },
+    {
+      id:'REG2025010003', status:'pending', paid:false,
+      submittedAt:'2025-11-01 09:15', reviewTime:null, rejectReason:null,
+      idFront:'', idBack:'', healthReport:'',
+      workItems:[
+        { workType:'焊接与热切割作业', certNo:'TZ202111000789', validFrom:'2023-01-01', validTo:'2028-01-01', certImgs:[] },
+        { workType:'制冷与空调作业',   certNo:'TZ202211000111', validFrom:'2023-05-01', validTo:'2028-05-01', certImgs:[] }
+      ],
+      name:'张三', idCard:currentUser.idCard, phone:currentUser.phone, gender:currentUser.gender
+    },
+    {
+      id:'REG2025010004', status:'rejected', paid:false,
+      submittedAt:'2025-10-20 16:45', reviewTime:'2025-10-21 10:30',
+      rejectReason:'证书编号格式有误，请核对特种作业操作证原件后重新提交。另体检报告照片不清晰，请重新上传。',
+      idFront:'', idBack:'', healthReport:'',
+      workItems:[
+        { workType:'煤矿安全作业', certNo:'TZ202311000999', validFrom:'2023-06-01', validTo:'2028-06-01', certImgs:[] }
+      ],
+      name:'张三', idCard:currentUser.idCard, phone:currentUser.phone, gender:currentUser.gender
+    }
+  ];
+  saveArchives(demo);
+}
+
+/* ========== 初始化顶栏 ========== */
+ensureDemoData();
+document.getElementById('user-name').textContent = currentUser.name || '张三';
+document.getElementById('user-avatar').textContent = (currentUser.name || '张').charAt(0);
+const maskedId = (currentUser.idCard || '').length >= 10
+  ? currentUser.idCard.substring(0,3) + '***********' + currentUser.idCard.substring(currentUser.idCard.length-4)
+  : currentUser.idCard;
+document.getElementById('user-idcard').textContent = maskedId;
+// 基础信息只读区
+document.getElementById('base-name').value = currentUser.name || '张三';
+document.getElementById('base-gender').value = currentUser.gender || '男';
+document.getElementById('base-idcard').value = currentUser.idCard || '110101199001011234';
+const phone = currentUser.phone || '';
+document.getElementById('base-phone').value = phone.length === 11 ? phone.substring(0,3)+'****'+phone.substring(7) : phone;
+
+/* ========== 历史列表渲染 ========== */
+let historyFilter = 'all';
+function bindHistoryTabs() {
+  document.querySelectorAll('#history-tabs .history-tab').forEach(t => {
+    t.addEventListener('click', () => {
+      document.querySelectorAll('#history-tabs .history-tab').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      historyFilter = t.dataset.f;
+      renderHistory();
+    });
+  });
+}
+
+function renderHistory() {
+  const all = getArchives();
+  // 计数
+  const submitted = all.filter(a => a.status !== 'draft');
+  document.getElementById('hcnt-all').textContent = submitted.length;
+  document.getElementById('hcnt-pending').textContent = submitted.filter(a => a.status === 'pending').length;
+  document.getElementById('hcnt-approved').textContent = submitted.filter(a => a.status === 'approved').length;
+  document.getElementById('hcnt-paid').textContent = submitted.filter(a => a.status === 'paid').length;
+  document.getElementById('hcnt-rejected').textContent = submitted.filter(a => a.status === 'rejected').length;
+
+  let filtered = submitted;
+  if (historyFilter !== 'all') {
+    if (historyFilter === 'paid') filtered = submitted.filter(a => a.status === 'paid');
+    else filtered = submitted.filter(a => a.status === historyFilter);
+  }
+  filtered.sort((a,b) => ORDER_MAP[a.status]-ORDER_MAP[b.status] || (b.submittedAt||'').localeCompare(a.submittedAt||''));
+
+  const container = document.getElementById('history-list');
+  if (!filtered.length) {
+    container.innerHTML = `<div class="empty-state"><div class="ico">📭</div>暂无${historyFilter==='all'?'':STATUS_CONFIG[historyFilter]?.text||''}报名记录</div>`;
+    return;
+  }
+
+  container.innerHTML = filtered.map(arc => renderHistoryCard(arc)).join('');
+}
+
+function renderHistoryCard(arc) {
+  const cfg = STATUS_CONFIG[arc.status] || STATUS_CONFIG.pending;
+  const items = arc.workItems || [];
+  const workTypesHtml = items.map(w => w.workType || '—').join('、') || '—';
+
+  // 主展示字段：取第一个工种，附加数量
+  const mainWork = items[0];
+  const certInfo = items.length > 1 ? `共 ${items.length} 个工种` : (mainWork ? `${mainWork.certNo||'—'} · ${mainWork.validFrom||'—'} 至 ${mainWork.validTo||'—'}` : '—');
+
+  let actions = `<button class="btn btn-link" onclick="openHistoryDetail('${arc.id}')">查看详情</button>`;
+  if (arc.status === 'rejected') {
+    actions += `<button class="btn btn-link danger" onclick="editRejected('${arc.id}')">重新编辑</button>`;
+  } else if (arc.status === 'approved' && !arc.paid) {
+    actions += `<button class="btn btn-link" onclick="showToast('请前往「缴费订单」完成缴费')">去缴费</button>`;
+  } else if (arc.status === 'pending') {
+    actions += `<span style="font-size:12px;color:#8c8c8c;padding:0 8px;">等待审核中...</span>`;
+  }
+
+  let rejectBox = '';
+  if (arc.status === 'rejected' && arc.rejectReason) {
+    rejectBox = `<div class="history-reject-box"><b>❌ 驳回原因：</b>${arc.rejectReason}</div>`;
+  }
+
+  let subTag = '';
+  if (arc.status === 'approved' && !arc.paid) subTag = '<span style="color:#fa8c16;font-size:12px;margin-left:6px;">· 待缴费</span>';
+  if (arc.status === 'paid') subTag = '<span style="color:#1677ff;font-size:12px;margin-left:6px;">· 已缴费可学习</span>';
+
+  return `<div class="history-card">
+    <div class="history-head">
+      <div class="title">
+        📋 ${workTypesHtml}
+        ${items.length > 1 ? `<span class="badge-num">${items.length} 个工种</span>` : ''}
+        <span class="tag ${cfg.cls}"><span class="tag-dot"></span>${cfg.text}${subTag}</span>
+      </div>
+    </div>
+    <div class="history-body">
+      <div class="history-kv-grid">
+        <div class="kv"><span class="k">提交时间：</span><span class="v">${arc.submittedAt || '—'}</span></div>
+        <div class="kv"><span class="k">审核时间：</span><span class="v">${arc.reviewTime || '—'}</span></div>
+        <div class="kv"><span class="k">报名项目：</span><span class="v">${workTypesHtml}</span></div>
+        <div class="kv"><span class="k">证书信息：</span><span class="v">${certInfo}</span></div>
+        ${arc.paid ? `<div class="kv"><span class="k">缴费时间：</span><span class="v">${arc.paidAt || '—'}</span></div>` : ''}
+      </div>
+      ${rejectBox}
+    </div>
+    <div class="history-actions">${actions}</div>
+  </div>`;
+}
+
+/* ========== 共用材料（draft 自己的 idFront/idBack/healthReport） ========== */
+function getDraft() {
+  const list = getArchives();
+  return list.find(a => a.status === 'draft') || null;
+}
+function ensureDraft() {
+  const list = getArchives();
+  let draft = list.find(a => a.status === 'draft');
+  if (!draft) {
+    draft = {
+      id: 'REG' + Date.now(),
+      status: 'draft',
+      paid: false, paidAt: null, submittedAt: null, reviewTime: null, rejectReason: null,
+      idFront: '', idBack: '', healthReport: '',
+      workItems: [{ workType:'', certNo:'', validFrom:'', validTo:'', certImgs:[] }],
+      name: currentUser.name, idCard: currentUser.idCard, phone: currentUser.phone, gender: currentUser.gender
+    };
+    list.push(draft);
+    saveArchives(list);
+  }
+  return draft;
+}
+function updateDraft(mutator) {
+  const list = getArchives();
+  const idx = list.findIndex(a => a.status === 'draft');
+  if (idx < 0) return null;
+  mutator(list[idx], idx, list);
+  saveArchives(list);
+  return list[idx];
+}
+
+function renderSharedMaterials() {
+  const d = getDraft();
+  const items = [
+    { key:'idFront',  label:'身份证正面',  icon:'🪪', hint:'人像面', posId:'shared-up-idFront' },
+    { key:'idBack',   label:'身份证反面',  icon:'🪪', hint:'国徽面', posId:'shared-up-idBack' },
+    { key:'healthReport', label:'体检报告', icon:'📋', hint:'近三个月内', posId:'shared-up-health' }
+  ];
+  items.forEach(it => {
+    const el = document.getElementById(it.posId);
+    if (!el) return;
+    const hasImg = d && d[it.key];
+    if (hasImg) {
+      el.innerHTML = `
+        <input type="file" accept="image/png,image/jpeg" onchange="handleSharedUpload(event,'${it.key}')">
+        <img src="${d[it.key]}" class="upload-preview" alt="${it.label}">
+        <div class="upload-actions">
+          <button type="button" title="预览" onclick="event.preventDefault();event.stopPropagation();previewSharedImg('${it.key}','${it.label}')">🔍</button>
+          <button type="button" title="删除" onclick="event.preventDefault();event.stopPropagation();removeSharedImg('${it.key}')">✕</button>
+        </div>`;
+    } else {
+      el.innerHTML = `
+        <input type="file" accept="image/png,image/jpeg" onchange="handleSharedUpload(event,'${it.key}')">
+        <div class="up-icon">${it.icon}</div>
+        <div class="up-text">点击上传${it.label}</div>
+        <div class="up-hint">${it.hint}，JPG / PNG，≤ 5MB</div>`;
+    }
+  });
+}
+
+function handleSharedUpload(e, key) {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { showToast('图片大小不能超过 5MB'); e.target.value=''; return; }
+  if (!/^image\/(png|jpeg|jpg)$/.test(file.type)) { showToast('仅支持 JPG / PNG 格式'); e.target.value=''; return; }
+  const reader = new FileReader();
+  reader.onload = ev => {
+    updateDraft(d => { d[key] = ev.target.result; });
+    renderSharedMaterials();
+    renderBatchBar();
+    showToast('上传成功');
+  };
+  reader.readAsDataURL(file);
+}
+function removeSharedImg(key) {
+  updateDraft(d => { d[key] = ''; });
+  renderSharedMaterials();
+  renderBatchBar();
+}
+function previewSharedImg(key, label) {
+  const d = getDraft();
+  if (!d || !d[key]) return;
+  document.getElementById('preview-img').src = d[key];
+  document.getElementById('img-title').textContent = label + ' 预览';
+  document.getElementById('modal-img').classList.add('show');
+}
+
+/* ========== 工种卡片渲染 ========== */
+function renderWorkItems() {
+  const d = getDraft();
+  const container = document.getElementById('work-items-container');
+  if (!d || !d.workItems || !d.workItems.length) {
+    container.innerHTML = `<div class="empty-state"><div class="ico">➕</div>点击下方按钮添加第一个报名工种</div>`;
+    return;
+  }
+  container.innerHTML = d.workItems.map((w, i) => renderWorkCard(w, i)).join('');
+}
+
+function renderWorkCard(w, idx) {
+  const options = WORK_TYPES.map(t => `<option value="${t}" ${w.workType===t?'selected':''}>${t}</option>`).join('');
+
+  // 证书照片网格
+  const imgs = (w.certImgs && w.certImgs.length) ? w.certImgs : [''];
+  const certGridHtml = imgs.map((src, j) => {
+    if (src) {
+      return `<div class="cert-img-slot has-img" onclick="triggerCertFile(${idx},${j})">
+        <input type="file" accept="image/png,image/jpeg" style="display:none;" data-w="${idx}" data-i="${j}" onchange="handleCertUpload(event)">
+        <img src="${src}" onclick="event.stopPropagation();previewCertImg(${idx},${j})">
+        <div class="ci-actions">
+          <button type="button" title="预览" onclick="event.stopPropagation();previewCertImg(${idx},${j})">🔍</button>
+          <button type="button" title="删除" onclick="event.stopPropagation();removeCertImg(${idx},${j})">✕</button>
+        </div>
+      </div>`;
+    }
+    return `<div class="cert-img-slot" onclick="triggerCertFile(${idx},${j})">
+      <input type="file" accept="image/png,image/jpeg" style="display:none;" data-w="${idx}" data-i="${j}" onchange="handleCertUpload(event)">
+      <div class="ci-icon">📷</div><div class="ci-text">点击上传</div>
+    </div>`;
+  }).join('');
+
+  return `<div class="work-card">
+    <div class="work-card-head">
+      <div class="title"><span class="seq">${idx+1}</span>报名工种${cnNum(idx+1)}</div>
+      <button class="btn-link danger" onclick="removeWorkItem(${idx})" ${(function(){const dd=getDraft();return dd&&idx===0&&dd.workItems.length===1?'disabled':''})()}>删除</button>
+    </div>
+    <div class="work-card-body">
+      <div class="form-grid">
+        <div class="form-item">
+          <label class="required">工种</label>
+          <div class="input-wrap">
+            <select onchange="updateWorkField(${idx},'workType',this.value)">
+              <option value="">请选择工种</option>${options}
+            </select>
+          </div>
+        </div>
+        <div class="form-item">
+          <label class="required">证书编号</label>
+          <div class="input-wrap">
+            <input type="text" value="${w.certNo||''}" maxlength="30" placeholder="请输入证书编号" oninput="updateWorkField(${idx},'certNo',this.value.trim())">
+          </div>
+        </div>
+        <div class="form-item full">
+          <label class="required">证书有效起止时间</label>
+          <div class="date-range">
+            <div class="input-wrap"><input type="date" value="${w.validFrom||''}" onchange="updateWorkField(${idx},'validFrom',this.value)"></div>
+            <span class="sep">至</span>
+            <div class="input-wrap"><input type="date" value="${w.validTo||''}" onchange="updateWorkField(${idx},'validTo',this.value)"></div>
+          </div>
+        </div>
+        <div class="form-item full">
+          <label class="required">证书照片（本工种独立，可上传多张）</label>
+          <div class="cert-imgs-grid" id="cert-grid-${idx}">${certGridHtml}</div>
+          <div class="hint">每个工种的证书照片不同，请独立上传；支持正/反面、附件等多张</div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function cnNum(n) { return ['','一','二','三','四','五','六','七','八','九','十'][n] || n; }
+
+/* ========== 工种操作 ========== */
+function addWorkItem() {
+  updateDraft(d => {
+    d.workItems.push({ workType:'', certNo:'', validFrom:'', validTo:'', certImgs:[] });
+  });
+  renderWorkItems();
+  renderBatchBar();
+  showToast('已添加工种');
+}
+function removeWorkItem(idx) {
+  const d = getDraft();
+  if (!d) return;
+  if (d.workItems.length === 1) { showToast('至少保留 1 个工种'); return; }
+  updateDraft(d => { d.workItems.splice(idx, 1); });
+  renderWorkItems();
+  renderBatchBar();
+  showToast('已删除工种');
+}
+function updateWorkField(idx, key, val) {
+  updateDraft(d => { d.workItems[idx][key] = val; });
+  renderBatchBar();
+}
+
+/* ========== 证书照片（多图） ========== */
+function triggerCertFile(wi, ci) {
+  const grid = document.getElementById('cert-grid-'+wi);
+  if (!grid) return;
+  const slot = grid.children[ci];
+  if (slot) slot.querySelector('input[type=file]').click();
+}
+function handleCertUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { showToast('图片大小不能超过 5MB'); e.target.value=''; return; }
+  if (!/^image\/(png|jpeg|jpg)$/.test(file.type)) { showToast('仅支持 JPG / PNG 格式'); e.target.value=''; return; }
+  const wi = parseInt(e.target.dataset.w, 10);
+  const ci = parseInt(e.target.dataset.i, 10);
+  const reader = new FileReader();
+  reader.onload = ev => {
+    updateDraft(d => { d.workItems[wi].certImgs[ci] = ev.target.result; });
+    renderWorkItems();
+  };
+  reader.readAsDataURL(file);
+}
+function removeCertImg(wi, ci) {
+  updateDraft(d => {
+    d.workItems[wi].certImgs.splice(ci, 1);
+    if (!d.workItems[wi].certImgs.length) d.workItems[wi].certImgs = [''];
+  });
+  renderWorkItems();
+}
+function previewCertImg(wi, ci) {
+  const d = getDraft();
+  if (!d) return;
+  const src = d.workItems[wi] && d.workItems[wi].certImgs[ci];
+  if (!src) return;
+  document.getElementById('preview-img').src = src;
+  document.getElementById('img-title').textContent = `证书照片 ${wi+1}-${ci+1}`;
+  document.getElementById('modal-img').classList.add('show');
+}
+
+/* ========== 底部栏 & 提交 ========== */
+function renderBatchBar() {
+  const d = getDraft();
+  if (!d) {
+    document.getElementById('btn-submit-all').disabled = true;
+    document.getElementById('stat-workitems').textContent = '0';
+    document.getElementById('stat-shared').textContent = '0 / 3';
+    document.getElementById('submit-count').textContent = '0';
+    return;
+  }
+
+  const wiCount = d.workItems ? d.workItems.length : 0;
+  const okShared = (d.idFront?1:0)+(d.idBack?1:0)+(d.healthReport?1:0);
+
+  document.getElementById('stat-workitems').textContent = wiCount;
+  document.getElementById('stat-shared').textContent = okShared + ' / 3';
+  document.getElementById('submit-count').textContent = wiCount;
+
+  const statEl = document.getElementById('stat-shared');
+  statEl.className = 'num ' + (okShared===3 ? 'ok' : (okShared===0 ? '' : 'warn'));
+
+  const canSubmit = wiCount > 0 && okShared === 3;
+  document.getElementById('btn-submit-all').disabled = !canSubmit;
+}
+
+function openNewApplication() {
+  const existing = getDraft();
+  if (existing) {
+    // 已有草稿 → 直接打开弹窗继续编辑
+  } else {
+    ensureDraft();
+  }
+  renderSharedMaterials();
+  renderWorkItems();
+  renderBatchBar();
+  document.getElementById('modal-new-app').classList.add('show');
+}
+
+function closeNewApplication() {
+  const d = getDraft();
+  if (d) {
+    // 有草稿 → 提示确认
+    const hasContent = d.workItems.some(w => w.workType || w.certNo) || d.idFront || d.idBack || d.healthReport;
+    if (hasContent) {
+      showConfirm('closeNewApp', '关闭报名弹窗', '关闭后已填写的报名内容将保留为草稿，下次打开可继续编辑。确定关闭？', () => {
+        document.getElementById('modal-new-app').classList.remove('show');
+      });
+      return;
+    }
+  }
+  document.getElementById('modal-new-app').classList.remove('show');
+}
+
+function discardDraft() {
+  showConfirm('discardDraft', '取消本次报名', '确定要取消本次报名吗？已填写的所有内容将被清空。', () => {
+    const list = getArchives().filter(a => a.status !== 'draft');
+    saveArchives(list);
+    renderBatchBar();
+    renderHistory();
+    document.getElementById('modal-new-app').classList.remove('show');
+    showToast('已取消本次报名');
+  });
+}
+
+function validateDraft(d) {
+  if (!d.idFront) { showToast('请上传身份证正面'); return false; }
+  if (!d.idBack) { showToast('请上传身份证反面'); return false; }
+  if (!d.healthReport) { showToast('请上传体检报告'); return false; }
+  if (!d.workItems || d.workItems.length === 0) { showToast('请至少添加 1 个工种'); return false; }
+  for (let i = 0; i < d.workItems.length; i++) {
+    const w = d.workItems[i];
+    if (!w.workType) { showToast(`工种 ${i+1}：请选择工种`); return false; }
+    if (!w.certNo)   { showToast(`工种 ${i+1}：请输入证书编号`); return false; }
+    if (!w.validFrom) { showToast(`工种 ${i+1}：请选择证书生效时间`); return false; }
+    if (!w.validTo)   { showToast(`工种 ${i+1}：请选择证书到期时间`); return false; }
+    if (w.validFrom >= w.validTo) { showToast(`工种 ${i+1}：证书到期时间需晚于生效时间`); return false; }
+    const imgs = (w.certImgs || []).filter(x => x);
+    if (imgs.length === 0) { showToast(`工种 ${i+1}：请至少上传 1 张证书照片`); return false; }
+  }
+  return true;
+}
+
+function submitAll() {
+  const d = getDraft();
+  if (!d) { showToast('请先添加报名工种'); return; }
+  if (!validateDraft(d)) return;
+
+  // 全部通过 → 改状态为 pending
+  const list = getArchives();
+  const idx = list.findIndex(a => a.status === 'draft');
+  if (idx < 0) return;
+  list[idx].status = 'pending';
+  list[idx].submittedAt = nowStr();
+  list[idx].reviewTime = null;
+  list[idx].rejectReason = null;
+  saveArchives(list);
+
+  const wiCount = d.workItems.length;
+  // 先关闭新增报名弹窗，再展示成功弹窗（避免层级遮挡）
+  document.getElementById('modal-new-app').classList.remove('show');
+  document.getElementById('modal-success-text').innerHTML =
+    `您的 <b>${wiCount}</b> 个工种报名信息已提交，请等待系统审核。<br>共用证件材料将自动应用到本次报名的所有工种档案中。`;
+  document.getElementById('modal-success').classList.add('show');
+
+  renderBatchBar();
+  renderHistory();
+}
+
+/* ========== 历史详情 ========== */
+function openHistoryDetail(id) {
+  const arc = getArchives().find(a => a.id === id);
+  if (!arc) return;
+  const cfg = STATUS_CONFIG[arc.status] || STATUS_CONFIG.pending;
+
+  function imgBlock(src, label) {
+    if (src) return `<div class="di-item"><img src="${src}" onclick="window.open(this.src,'_blank')"><div class="di-label">${label}</div></div>`;
+    return `<div class="di-item no-img"><span>未上传</span><div class="di-label">${label}</div></div>`;
+  }
+
+  let rejectHtml = '';
+  if (arc.status === 'rejected' && arc.rejectReason) {
+    rejectHtml = `<div class="detail-section"><h4 style="color:#ff4d4f;">❌ 驳回原因</h4><div style="background:#fff2f0;border:1px solid #ffccc7;border-radius:6px;padding:12px 14px;color:#cf1322;font-size:13px;">${arc.rejectReason}</div></div>`;
+  }
+
+  // 工种详情块
+  let workHtml = '';
+  (arc.workItems || []).forEach((w, i) => {
+    const imgs = (w.certImgs && w.certImgs.length) ? w.certImgs : [];
+    const imgsHtml = imgs.length
+      ? imgs.map((src, j) => imgBlock(src, `证书照片 ${j+1}`)).join('')
+      : imgBlock('', '证书照片');
+
+    workHtml += `<div class="detail-work-block">
+      <div class="seq-title">📌 报名工种${cnNum(i+1)} ${w.workType || '—'}</div>
+      <div class="detail-grid" style="margin-bottom:10px;">
+        <div class="kv"><span class="k">证书编号：</span><span class="v">${w.certNo || '—'}</span></div>
+        <div class="kv"><span class="k">证书有效期：</span><span class="v">${w.validFrom || '—'} 至 ${w.validTo || '—'}</span></div>
+      </div>
+      <div class="detail-imgs">${imgsHtml}</div>
+    </div>`;
+  });
+
+  const body = `${rejectHtml}
+    <div class="detail-section">
+      <h4>基础信息</h4>
+      <div class="detail-grid">
+        <div class="kv"><span class="k">姓名：</span><span class="v">${arc.name || '—'}</span></div>
+        <div class="kv"><span class="k">身份证号：</span><span class="v">${arc.idCard || '—'}</span></div>
+        <div class="kv"><span class="k">手机号：</span><span class="v">${arc.phone || '—'}</span></div>
+        <div class="kv"><span class="k">当前状态：</span><span class="tag ${cfg.cls}"><span class="tag-dot"></span>${cfg.text}</span></div>
+        <div class="kv"><span class="k">提交时间：</span><span class="v">${arc.submittedAt || '—'}</span></div>
+        <div class="kv"><span class="k">审核时间：</span><span class="v">${arc.reviewTime || '—'}</span></div>
+      </div>
+    </div>
+    <div class="detail-section">
+      <h4>共用材料（本次报名独立快照）</h4>
+      <div class="detail-imgs">
+        ${imgBlock(arc.idFront, '身份证正面')}
+        ${imgBlock(arc.idBack, '身份证反面')}
+        ${imgBlock(arc.healthReport, '体检报告')}
+      </div>
+    </div>
+    <div class="detail-section">
+      <h4>报名工种信息（共 ${(arc.workItems||[]).length} 个）</h4>
+      ${workHtml || '<div style="color:#8c8c8c;font-size:13px;">暂无工种信息</div>'}
+    </div>`;
+
+  document.getElementById('detail-body').innerHTML = body;
+  document.getElementById('modal-detail').classList.add('show');
+}
+
+/* ========== 编辑驳回（复制内容到新 draft） ========== */
+function editRejected(id) {
+  showConfirm('editRejected', '重新编辑报名', '将把该驳回的报名内容复制到本次新报名中（共用材料需重新上传），确定继续？', () => {
+    const list = getArchives();
+    const src = list.find(a => a.id === id);
+    if (!src) return;
+    // 如果有现有 draft，先清掉
+    const idxDraft = list.findIndex(a => a.status === 'draft');
+    if (idxDraft >= 0) list.splice(idxDraft, 1);
+    // 创建新 draft，复制 workItems（深拷贝），共用材料清空（需重新上传）
+    list.push({
+      id: 'REG' + Date.now(),
+      status: 'draft',
+      paid: false, paidAt: null, submittedAt: null, reviewTime: null, rejectReason: null,
+      idFront: '', idBack: '', healthReport: '',
+      workItems: JSON.parse(JSON.stringify(src.workItems || [{ workType:'', certNo:'', validFrom:'', validTo:'', certImgs:[] }])),
+      name: src.name || currentUser.name, idCard: src.idCard || currentUser.idCard,
+      phone: src.phone || currentUser.phone, gender: src.gender || currentUser.gender
+    });
+    saveArchives(list);
+    renderSharedMaterials();
+    renderWorkItems();
+    renderBatchBar();
+    renderHistory();
+    document.getElementById('modal-new-app').classList.add('show');
+    showToast('已复制驳回内容，请重新上传共用材料后提交');
+  });
+}
+
+/* ========== 确认弹窗 ========== */
+let confirmAction = null;
+function showConfirm(key, title, text, action) {
+  document.getElementById('confirm-title').textContent = title;
+  document.getElementById('confirm-text').innerHTML = text;
+  document.getElementById('modal-confirm').classList.add('show');
+  confirmAction = action;
+}
+function runConfirmAction() {
+  if (confirmAction) { confirmAction(); confirmAction = null; }
+  closeModal('modal-confirm');
+}
+
+/* ========== 弹窗 & Toast ========== */
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+function closeImgModal() { document.getElementById('modal-img').classList.remove('show'); }
+
+document.getElementById('modal-success').addEventListener('click', e => { if(e.target.id==='modal-success') closeModal('modal-success'); });
+document.getElementById('modal-confirm').addEventListener('click', e => { if(e.target.id==='modal-confirm') closeModal('modal-confirm'); });
+document.getElementById('modal-img').addEventListener('click', e => { if(e.target.id==='modal-img') closeImgModal(); });
+document.getElementById('modal-detail').addEventListener('click', e => { if(e.target.id==='modal-detail') closeModal('modal-detail'); });
+document.getElementById('modal-new-app').addEventListener('click', e => { if(e.target.id==='modal-new-app') closeNewApplication(); });
+
+let toastTimer = null;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+/* ========== 菜单锁定 ========== */
+function refreshQualStatus() {
+  const list = getArchives();
+  const hasPaid = list.some(a => a.status === 'paid');
+  const hasApproved = list.some(a => a.status === 'approved');
+  const hasPending = list.some(a => a.status === 'pending');
+  const hasRejected = list.some(a => a.status === 'rejected');
+  if (hasPaid) sessionStorage.setItem('qual_status', 'paid');
+  else if (hasApproved) sessionStorage.setItem('qual_status', 'approved');
+  else if (hasPending) sessionStorage.setItem('qual_status', 'pending');
+  else if (hasRejected) sessionStorage.setItem('qual_status', 'rejected');
+  else sessionStorage.setItem('qual_status', 'draft');
+}
+function lockMenus() {
+  const status = sessionStorage.getItem('qual_status') || 'draft';
+  if (status !== 'approved' && status !== 'paid') {
+    const tip = status === 'pending' ? '报名信息待审核，暂不可访问该模块' : (status === 'rejected' ? '报名信息审核未通过，请修改后重新提交' : '请先提交报名信息，审核通过后可访问该模块');
+    document.querySelectorAll('.menu-item[data-lock="1"]').forEach(item => {
+      item.classList.add('disabled');
+      item.setAttribute('href', 'javascript:void(0)');
+      item.addEventListener('click', e => { e.preventDefault(); alert(tip); });
+    });
+  }
+}
+
+function logout() { sessionStorage.clear(); window.location.href = '登录.html'; }
+function downloadTemplate() { showToast('体检表模板下载中...'); setTimeout(() => alert('体检表模板已下载（演示：实际环境将下载 PDF/Word 文件）'), 600); }
+
+/* ========== 启动 ========== */
+bindHistoryTabs();
+renderHistory();
+renderBatchBar();
+refreshQualStatus();
+lockMenus();
+</script>
+</body>
+</html>

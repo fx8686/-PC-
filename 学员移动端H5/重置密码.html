@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>重置密码 - 特殊工种延期教育系统</title>
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/reset.css">
+</head>
+<body data-page="reset">
+<div class="app">
+
+  <!-- 顶部导航（独立布局：无底部标签栏） -->
+  <header class="sub-navbar">
+    <a class="back" href="登录.html" aria-label="返回登录">‹</a>
+    <span class="sub-title">重置密码</span>
+    <span class="placeholder"></span>
+  </header>
+
+  <main class="page">
+    <!-- 步骤提示 -->
+    <div class="reset-tip">通过绑定手机号验证身份后，即可设置新的登录密码。</div>
+
+    <section class="card form-card">
+      <!-- 手机号 -->
+      <div class="field">
+        <label class="required">手机号</label>
+        <input class="input" id="f-phone" type="tel" maxlength="11"
+               placeholder="请输入绑定的11位手机号" inputmode="numeric" autocomplete="tel">
+        <div class="err" id="e-phone"></div>
+      </div>
+
+      <!-- 验证码 -->
+      <div class="field">
+        <label class="required">验证码</label>
+        <div class="code-row">
+          <input class="input" id="f-code" type="text" maxlength="6"
+                 placeholder="请输入短信验证码" inputmode="numeric" autocomplete="one-time-code">
+          <button type="button" class="btn btn-ghost btn-code" id="btn-code">获取验证码</button>
+        </div>
+        <div class="err" id="e-code"></div>
+      </div>
+
+      <!-- 新密码 -->
+      <div class="field">
+        <label class="required">新密码</label>
+        <input class="input" id="f-newpwd" type="password" maxlength="20"
+               placeholder="请设置新密码（6-20位）" autocomplete="new-password">
+        <div class="err" id="e-newpwd"></div>
+      </div>
+
+      <!-- 确认新密码 -->
+      <div class="field">
+        <label class="required">确认新密码</label>
+        <input class="input" id="f-confirmpwd" type="password" maxlength="20"
+               placeholder="请再次输入新密码" autocomplete="new-password">
+        <div class="err" id="e-confirmpwd"></div>
+      </div>
+
+      <button class="btn btn-primary btn-block" id="btn-submit">确认重置</button>
+
+      <a class="back-login" href="登录.html">返回登录</a>
+    </section>
+
+    <div class="page-footer">特殊工种延期教育系统咨询电话：<b>0530-5169991</b></div>
+  </main>
+
+  <!-- 重置成功弹窗（居中） -->
+  <div class="mask center" id="dialog-success">
+    <div class="dialog">
+      <div class="dlg-icon ok">✓</div>
+      <div class="dlg-title">密码重置成功</div>
+      <div class="dlg-text">请使用新密码重新登录<br><span class="cd"><b id="cd-num">3</b> 秒后自动返回登录页</span></div>
+      <div class="dlg-actions">
+        <button class="btn btn-primary btn-block" id="btn-go-login">立即返回登录</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+<script src="js/util.js"></script>
+<script src="js/store.js"></script>
+<script src="js/api.js"></script>
+<script src="js/reset.js"></script>
+</body>
+</html>

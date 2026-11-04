@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>继续教育档案 - 特殊工种延期教育系统</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif; background: #f0f2f5; color: #262626; min-height: 100vh; }
+  a { text-decoration: none; color: inherit; }
+
+  .topbar { position: fixed; top: 0; left: 0; right: 0; height: 60px; background: #fff; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; z-index: 100; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+  .brand { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 600; color: #1f1f1f; }
+  .brand .logo { width: 32px; height: 32px; border-radius: 8px; background: #1677ff; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .user { display: flex; align-items: center; gap: 16px; color: #595959; font-size: 14px; }
+  .user .avatar { width: 32px; height: 32px; border-radius: 50%; background: #e6f4ff; color: #1677ff; display: flex; align-items: center; justify-content: center; font-weight: 600; }
+  .user .divider { width: 1px; height: 16px; background: #e8e8e8; }
+  .logout { background: none; border: none; color: #8c8c8c; cursor: pointer; font-size: 14px; }
+  .logout:hover { color: #ff4d4f; }
+
+  .sidebar { position: fixed; top: 60px; left: 0; bottom: 0; width: 220px; background: #001529; color: rgba(255,255,255,0.75); padding: 12px 0; overflow-y: auto; z-index: 99; }
+  .menu-item { display: flex; align-items: center; gap: 12px; padding: 12px 24px; font-size: 14px; cursor: pointer; border-left: 3px solid transparent; transition: all 0.2s; }
+  .menu-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
+  .menu-item.active { background: #1677ff; color: #fff; border-left-color: #fff; }
+  .menu-item.disabled { color: rgba(255,255,255,0.3); cursor: not-allowed; }
+  .menu-item.disabled:hover { background: transparent; color: rgba(255,255,255,0.3); }
+  .menu-item .icon { font-size: 16px; width: 20px; text-align: center; }
+
+  .main { margin-left: 220px; margin-top: 60px; padding: 24px; min-height: calc(100vh - 60px); }
+  .page-title { font-size: 20px; font-weight: 600; margin-bottom: 16px; color: #1f1f1f; }
+
+  .table-card { background: #fff; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; }
+  thead th { background: #fafafa; padding: 14px 16px; text-align: left; font-size: 13px; font-weight: 600; color: #595959; border-bottom: 1px solid #f0f0f0; }
+  tbody td { padding: 14px 16px; font-size: 14px; color: #262626; border-bottom: 1px solid #f5f5f5; }
+  tbody tr { transition: background 0.15s; }
+  tbody tr:hover { background: #f0f7ff; }
+  tbody tr:last-child td { border-bottom: none; }
+
+  .tag { display: inline-flex; align-items: center; padding: 2px 10px; border-radius: 4px; font-size: 12px; font-weight: 500; }
+  .tag-void { background: #fff1f0; color: #cf1322; border: 1px solid #ffa39e; }
+  .score-pass { color: #389e0d; font-weight: 600; }
+  .cert-no { color: #1677ff; font-family: monospace; }
+
+  .btn { height: 32px; padding: 0 14px; border: none; border-radius: 6px; font-size: 13px; cursor: pointer; transition: all 0.2s; font-weight: 500; margin-right: 8px; }
+  .btn-primary { background: #1677ff; color: #fff; }
+  .btn-primary:hover { background: #4096ff; }
+  .btn-default { background: #fff; color: #595959; border: 1px solid #d9d9d9; }
+  .btn-default:hover { color: #1677ff; border-color: #1677ff; }
+  .btn-danger-text { background: none; color: #ff4d4f; border: none; cursor: pointer; font-size: 13px; padding: 0; }
+  .btn-danger-text:hover { text-decoration: underline; }
+
+  .empty { text-align: center; padding: 60px 20px; color: #8c8c8c; font-size: 14px; }
+
+  /* 弹窗 */
+  .modal-mask { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 1000; align-items: center; justify-content: center; }
+  .modal-mask.show { display: flex; }
+  .modal { background: #fff; border-radius: 10px; max-width: 90vw; box-shadow: 0 12px 40px rgba(0,0,0,0.2); overflow: hidden; animation: pop 0.2s ease; }
+  .modal.preview { width: 620px; }
+  .modal.confirm { width: 420px; }
+  @keyframes pop { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .modal-header { padding: 16px 20px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; justify-content: space-between; }
+  .modal-title { font-size: 16px; font-weight: 600; color: #1f1f1f; }
+  .modal-close { cursor: pointer; color: #8c8c8c; font-size: 20px; line-height: 1; background: none; border: none; }
+  .modal-close:hover { color: #262626; }
+  .modal-body { padding: 20px; }
+
+  /* 凭证预览 */
+  .certificate {
+    position: relative; border: 2px solid #1677ff; border-radius: 8px; padding: 36px 40px;
+    background: linear-gradient(135deg, #fafcff 0%, #e6f4ff 100%); text-align: center;
+  }
+  .cert-header { font-size: 22px; font-weight: 700; color: #0958d9; margin-bottom: 6px; }
+  .cert-sub { font-size: 13px; color: #8c8c8c; margin-bottom: 28px; }
+  .cert-name { font-size: 28px; color: #cf1322; font-weight: 700; margin: 16px 0; }
+  .cert-info { text-align: left; max-width: 380px; margin: 0 auto; font-size: 14px; line-height: 2; color: #262626; }
+  .cert-info b { color: #1f1f1f; }
+  .cert-footer { margin-top: 28px; font-size: 12px; color: #8c8c8c; }
+  .watermark {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    font-size: 64px; font-weight: 900; color: rgba(255, 77, 79, 0.25); transform: rotate(-30deg);
+    pointer-events: none; letter-spacing: 8px;
+  }
+
+  .confirm-body { text-align: center; padding: 16px 20px 8px; }
+  .confirm-body .ico { font-size: 40px; margin-bottom: 12px; }
+  .confirm-body p { font-size: 15px; color: #262626; line-height: 1.6; }
+  .modal-footer { padding: 12px 20px 20px; display: flex; justify-content: center; gap: 12px; }
+  .modal-footer .btn { width: 100px; height: 36px; margin: 0; }
+
+  /* Toast */
+  .toast { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.78); color: #fff; padding: 10px 20px; border-radius: 6px; font-size: 14px; z-index: 2000; opacity: 0; transition: opacity 0.3s; }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><span class="logo">🛡️</span>特殊工种延期教育系统</div>
+  <div class="user">
+    <span class="avatar">张</span><span>学员：张三</span><span class="divider"></span>
+    <span>证件号：110***********1234</span><span class="divider"></span>
+    <button class="logout" onclick="logout()">退出登录</button>
+  </div>
+</header>
+<aside class="sidebar">
+  <a href="工作台.html" class="menu-item" style="display:none;"><span class="icon">🏠</span><span>首页工作台</span></a>
+  <a href="个人报名信息.html" class="menu-item"><span class="icon">📋</span><span>个人报名信息</span></a>
+  <a href="我的课程.html" class="menu-item" data-lock="1"><span class="icon">📚</span><span>我的课程</span></a>
+  <a href="缴费订单.html" class="menu-item"><span class="icon">💰</span><span>缴费订单</span></a>
+  <a href="我的考试.html" class="menu-item" data-lock="1"><span class="icon">📝</span><span>我的考试</span></a>
+  <a href="继续教育档案.html" class="menu-item" style="display:none;"><span class="icon">📄</span><span>继续教育档案</span></a>
+  <a href="我的证书.html" class="menu-item" style="display:none;"><span class="icon">🎓</span><span>我的证书</span></a>
+  <a href="系统公告.html" class="menu-item" style="display:none;"><span class="icon">📢</span><span>系统公告</span></a>
+  <a href="帮助中心.html" class="menu-item" style="display:none;"><span class="icon">❓</span><span>帮助中心</span></a>
+</aside>
+<main class="main">
+  <div class="page-title">继续教育档案</div>
+  <div class="table-card">
+    <table>
+      <thead>
+        <tr>
+          <th>工种名称</th>
+          <th>继续教育完成时间</th>
+          <th>考试成绩</th>
+          <th>档案凭证编号</th>
+          <th>状态</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="archive-tbody"></tbody>
+    </table>
+  </div>
+</main>
+
+<!-- 凭证预览弹窗 -->
+<div class="modal-mask" id="modal-preview">
+  <div class="modal preview" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title">继续教育合格凭证</span>
+      <button class="modal-close" onclick="closeModal('modal-preview')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="certificate" id="cert-box">
+        <div class="watermark" id="cert-watermark" style="display:none;">已作废</div>
+        <div class="cert-header">继续教育合格凭证</div>
+        <div class="cert-sub">特殊工种延期教育系统 · 电子档案凭证</div>
+        <div class="cert-name">张 三</div>
+        <div class="cert-info">
+          <div>工种名称：<b id="p-worktype">-</b></div>
+          <div>身份证号：<b>110101********1234</b></div>
+          <div>完成时间：<b id="p-time">-</b></div>
+          <div>考试成绩：<b id="p-score">-</b> 分</div>
+          <div>凭证编号：<b id="p-certno" class="cert-no">-</b></div>
+        </div>
+        <div class="cert-footer">本凭证由特殊工种延期教育系统自动生成，可用于特种作业证书延期复审。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 操作确认弹窗（作废凭证） -->
+<div class="modal-mask" id="modal-confirm">
+  <div class="modal confirm" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title">操作确认</span>
+      <button class="modal-close" onclick="closeModal('modal-confirm')">×</button>
+    </div>
+    <div class="confirm-body">
+      <div class="ico">⚠️</div>
+      <p>确定要作废该继续教育档案凭证吗？<br>作废后凭证将添加作废水印，且不可撤销。</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeModal('modal-confirm')">取消</button>
+      <button class="btn btn-primary" onclick="confirmVoid()">确认作废</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ========== 资质状态锁定菜单 ==========
+  (function() {
+    const urlStatus = new URLSearchParams(location.search).get('status');
+    const status = urlStatus || sessionStorage.getItem('qual_status') || 'approved';
+    if (status === 'pending' || status === 'rejected') {
+      const tip = status === 'pending' ? '资质待审核，暂不可访问该模块' : '资质审核未通过，请修改后重新提交';
+      document.querySelectorAll('.menu-item[data-lock="1"]').forEach(item => {
+        item.classList.add('disabled');
+        item.setAttribute('href', 'javascript:void(0)');
+        item.addEventListener('click', e => { e.preventDefault(); alert(tip); });
+      });
+    }
+  })();
+
+  // 基础档案数据 + 从 sessionStorage 合并考试合格生成的新记录
+  let records = [
+    { id: 'r1', workType: '低压电工作业', finishTime: '2024-08-15', score: 88, certNo: 'CE2024080001', voided: false },
+    { id: 'r2', workType: '低压电工作业', finishTime: '2023-07-20', score: 92, certNo: 'CE2023070001', voided: true },
+  ];
+  // 合并 sessionStorage 中的新记录，并回写作废状态
+  try {
+    const stored = JSON.parse(sessionStorage.getItem('archive_records') || '[]');
+    stored.forEach(r => {
+      const existing = records.find(x => x.id === r.id);
+      if (existing) { existing.voided = r.voided; }
+      else records.push(r);
+    });
+  } catch(e) {}
+
+  let currentVoidId = null;
+
+  function render() {
+    const tbody = document.getElementById('archive-tbody');
+    if (records.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" class="empty">暂无继续教育档案记录，考试合格后将自动生成。</td></tr>';
+      return;
+    }
+    tbody.innerHTML = records.map(r => `
+      <tr>
+        <td>${r.workType}</td>
+        <td>${r.finishTime}</td>
+        <td><span class="score-pass">${r.score} 分</span></td>
+        <td><span class="cert-no">${r.certNo}</span></td>
+        <td>${r.voided ? '<span class="tag tag-void">已作废</span>' : '<span style="color:#52c41a;">● 有效</span>'}</td>
+        <td>
+          <button class="btn btn-primary" onclick="preview('${r.id}')">预览凭证</button>
+          <button class="btn btn-default" onclick="downloadPdf('${r.id}')">下载PDF</button>
+          ${r.voided ? '' : `<button class="btn-danger-text" onclick="openVoid('${r.id}')">作废</button>`}
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function preview(id) {
+    const r = records.find(x => x.id === id);
+    if (!r) return;
+    document.getElementById('p-worktype').textContent = r.workType;
+    document.getElementById('p-time').textContent = r.finishTime;
+    document.getElementById('p-score').textContent = r.score;
+    document.getElementById('p-certno').textContent = r.certNo;
+    document.getElementById('cert-watermark').style.display = r.voided ? 'flex' : 'none';
+    document.getElementById('modal-preview').classList.add('show');
+  }
+
+  function downloadPdf(id) {
+    const r = records.find(x => x.id === id);
+    showToast('正在下载 ' + r.certNo + '.pdf ...');
+    // 模拟浏览器下载动作
+    setTimeout(() => showToast('凭证 PDF 下载完成（模拟）'), 1200);
+  }
+
+  function openVoid(id) {
+    currentVoidId = id;
+    document.getElementById('modal-confirm').classList.add('show');
+  }
+  function confirmVoid() {
+    const r = records.find(x => x.id === currentVoidId);
+    if (r) {
+      r.voided = true;
+      // 持久化到 sessionStorage（仅保存非基础记录或全部状态）
+      try {
+        const stored = JSON.parse(sessionStorage.getItem('archive_records') || '[]');
+        const idx = stored.findIndex(x => x.id === r.id);
+        if (idx >= 0) stored[idx].voided = true;
+        else stored.push(r);
+        sessionStorage.setItem('archive_records', JSON.stringify(stored));
+      } catch(e) {}
+    }
+    closeModal('modal-confirm');
+    render();
+    showToast('凭证已作废');
+  }
+
+  function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+  ['modal-preview','modal-confirm'].forEach(id => {
+    document.getElementById(id).addEventListener('click', e => {
+      if (e.target.id === id) closeModal(id);
+    });
+  });
+
+  let toastTimer = null;
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
+  }
+
+  function logout() { sessionStorage.clear(); window.location.href = '登录.html'; }
+
+  render();
+</script>
+</body>
+</html>

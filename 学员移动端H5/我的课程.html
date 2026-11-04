@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>我的课程 - 特殊工种延期教育系统（移动端）</title>
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/courses.css">
+</head>
+<body data-page="courses">
+
+<div class="app">
+  <header class="navbar">
+    <span class="nav-btn"></span>
+    <span class="nav-title">我的课程</span>
+    <button class="nav-btn right" id="btn-logout" type="button">退出</button>
+  </header>
+
+  <main class="page">
+    <!-- 报名档案 -->
+    <span class="section-title">报名档案</span>
+    <div id="archive-list">
+      <div class="skeleton"></div>
+      <div class="skeleton"></div>
+    </div>
+
+    <!-- 课程学习进度 -->
+    <div class="section-head" id="section-courses">
+      <span class="section-title">课程学习进度</span>
+      <span class="muted">60 分钟 = 1 学时</span>
+    </div>
+    <div class="chips" id="course-chips"></div>
+    <div id="course-list"></div>
+    <p class="hint" style="padding:0 4px;">学时规则：每累计 60 分钟有效播放记 1 学时；24 小时内最多累计 7 学时；重复观看同一视频不重复计学时。</p>
+  </main>
+</div>
+
+<!-- ==================== 课程学习弹层 ==================== -->
+<div class="mask" id="sheet-course">
+  <div class="sheet">
+    <div class="sheet-head">
+      <span id="cd-name">课程学习</span>
+      <button class="sheet-close" type="button" data-close="sheet-course">×</button>
+    </div>
+    <div class="sheet-body">
+      <div class="cd-meta" id="cd-meta"></div>
+      <div class="cd-progress">
+        <div class="progress"><div class="progress-bar" id="cd-bar"></div></div>
+        <div class="cd-stat">
+          <span id="cd-done">已学 0 课时</span>
+          <span id="cd-total">共 0 课时</span>
+        </div>
+      </div>
+      <div class="notice">
+        进入播放页后，正常观看每 60 秒计 1 学时（演示压缩，真实为 60 分钟）。<br>
+        禁止快进、拖拽与倍速播放；同一章节仅计一次学时，24 小时内上限 7 学时。
+      </div>
+    </div>
+    <div class="sheet-foot">
+      <button class="btn btn-ghost" type="button" data-close="sheet-course">关闭</button>
+      <button class="btn btn-primary" id="btn-learn-one" type="button">进入课程播放</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 证书预览弹层 ==================== -->
+<div class="mask" id="sheet-cert">
+  <div class="sheet">
+    <div class="sheet-head">
+      <span>安全生产教育培训证书</span>
+      <button class="sheet-close" type="button" data-close="sheet-cert">×</button>
+    </div>
+    <div class="sheet-body">
+      <div id="cert-body"></div>
+      <p class="hint">该证书为参加后续相关工种考试的必要凭证。</p>
+    </div>
+    <div class="sheet-foot">
+      <button class="btn btn-ghost" type="button" data-close="sheet-cert">关闭</button>
+      <button class="btn btn-primary" id="btn-download-cert" type="button">下载证书</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 学时达标提醒 ==================== -->
+<div class="mask center" id="dialog-hours-done">
+  <div class="dialog">
+    <div class="dialog-icon success">✓</div>
+    <div class="dialog-title">学时已完成</div>
+    <div class="dialog-text" id="hours-done-text"></div>
+    <div class="dialog-actions">
+      <button class="btn btn-ghost" id="btn-cert-from-dialog" type="button">查看证书</button>
+      <button class="btn btn-primary" id="btn-exam-from-dialog" type="button">去考试</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/util.js"></script>
+<script src="js/store.js"></script>
+<script src="js/api.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/courses.js"></script>
+</body>
+</html>

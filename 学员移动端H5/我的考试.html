@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>我的考试 - 特殊工种延期教育系统（移动端）</title>
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/exams.css">
+</head>
+<body data-page="exams">
+
+<div class="app">
+  <header class="navbar">
+    <span class="nav-btn"></span>
+    <span class="nav-title">我的考试</span>
+    <button class="nav-btn right" id="btn-logout" type="button">退出</button>
+  </header>
+
+  <main class="page">
+    <!-- 资质未通过提示 -->
+    <div class="tip-card hide" id="qual-tip">
+      <span class="ico">⚠️</span>
+      <div>
+        <b id="qual-tip-title">暂无法参加考试</b>
+        <p id="qual-tip-text">您的报名信息尚未审核通过，请前往「报名信息」查看进度。</p>
+      </div>
+    </div>
+
+    <div id="exam-content">
+      <div class="chips" id="exam-chips">
+        <button class="chip active" data-status="">全部</button>
+        <button class="chip" data-status="wait">待考试</button>
+        <button class="chip" data-status="pass">合格</button>
+        <button class="chip" data-status="fail">不合格</button>
+      </div>
+      <div id="exam-list">
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+      </div>
+      <p class="hint" style="padding:0 4px;">考试规则：课程学时完成 21 学时后方可参加考试；每场考试 80 道题、限时 60 分钟，共 2 次考试机会。</p>
+    </div>
+  </main>
+</div>
+
+<!-- ==================== 进入考试确认 ==================== -->
+<div class="mask" id="sheet-confirm">
+  <div class="sheet">
+    <div class="sheet-head">
+      <span>进入考试</span>
+      <button class="sheet-close" type="button" data-close="sheet-confirm">×</button>
+    </div>
+    <div class="sheet-body">
+      <div class="confirm-name" id="confirm-name">—</div>
+      <div class="info-grid">
+        <div class="info-item"><span>考试时长</span><b>60 分钟</b></div>
+        <div class="info-item"><span>试题数量</span><b>80 题</b></div>
+        <div class="info-item"><span>考试机会</span><b>2 次</b></div>
+        <div class="info-item"><span>总分 / 合格线</span><b>100 / 60</b></div>
+        <div class="info-item"><span>题型</span><b>40 单选 + 20 判断 + 20 多选</b></div>
+        <div class="info-item"><span>组卷方式</span><b>题库随机抽题</b></div>
+      </div>
+      <div class="notice">
+        考试开始后将进行倒计时，剩余 5 分钟时提醒，倒计时结束自动交卷；进入考试前请确保网络稳定。
+      </div>
+    </div>
+    <div class="sheet-foot">
+      <button class="btn btn-ghost" type="button" data-close="sheet-confirm">取消</button>
+      <button class="btn btn-primary" id="btn-enter-exam" type="button">开始考试</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 考试详情 ==================== -->
+<div class="mask" id="sheet-detail">
+  <div class="sheet">
+    <div class="sheet-head">
+      <span>考试详情</span>
+      <button class="sheet-close" type="button" data-close="sheet-detail">×</button>
+    </div>
+    <div class="sheet-body" id="detail-body"></div>
+    <div class="sheet-foot">
+      <button class="btn btn-primary" type="button" data-close="sheet-detail">关闭</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/util.js"></script>
+<script src="js/store.js"></script>
+<script src="js/api.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/exams.js"></script>
+</body>
+</html>

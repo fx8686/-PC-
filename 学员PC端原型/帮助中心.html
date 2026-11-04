@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>帮助中心 - 特殊工种延期教育系统</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif; background: #f0f2f5; color: #262626; min-height: 100vh; }
+  a { text-decoration: none; color: inherit; }
+  .topbar { position: fixed; top: 0; left: 0; right: 0; height: 60px; background: #fff; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; z-index: 100; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+  .brand { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 600; color: #1f1f1f; }
+  .brand .logo { width: 32px; height: 32px; border-radius: 8px; background: #1677ff; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .user { display: flex; align-items: center; gap: 16px; color: #595959; font-size: 14px; }
+  .user .avatar { width: 32px; height: 32px; border-radius: 50%; background: #e6f4ff; color: #1677ff; display: flex; align-items: center; justify-content: center; font-weight: 600; }
+  .user .divider { width: 1px; height: 16px; background: #e8e8e8; }
+  .logout { background: none; border: none; color: #8c8c8c; cursor: pointer; font-size: 14px; }
+  .logout:hover { color: #ff4d4f; }
+  .sidebar { position: fixed; top: 60px; left: 0; bottom: 0; width: 220px; background: #001529; color: rgba(255,255,255,0.75); padding: 12px 0; overflow-y: auto; z-index: 99; }
+  .menu-item { display: flex; align-items: center; gap: 12px; padding: 12px 24px; font-size: 14px; cursor: pointer; border-left: 3px solid transparent; transition: all 0.2s; }
+  .menu-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
+  .menu-item.active { background: #1677ff; color: #fff; border-left-color: #fff; }
+  .menu-item.disabled { color: rgba(255,255,255,0.3); cursor: not-allowed; }
+  .menu-item.disabled:hover { background: transparent; color: rgba(255,255,255,0.3); }
+  .menu-item .icon { font-size: 16px; width: 20px; text-align: center; }
+  .main { margin-left: 220px; margin-top: 60px; padding: 24px; min-height: calc(100vh - 60px); }
+  .page-title { font-size: 20px; font-weight: 600; margin-bottom: 20px; color: #1f1f1f; }
+  .card { background: #fff; border-radius: 10px; padding: 60px 40px; text-align: center; color: #8c8c8c; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+  .card .big { font-size: 56px; margin-bottom: 16px; }
+  .card h3 { color: #595959; font-size: 18px; margin-bottom: 8px; }
+  .card p { font-size: 14px; line-height: 1.8; }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><span class="logo">🛡️</span>特殊工种延期教育系统</div>
+  <div class="user">
+    <span class="avatar">张</span><span>学员：张三</span><span class="divider"></span>
+    <span>证件号：110***********1234</span><span class="divider"></span>
+    <button class="logout" onclick="logout()">退出登录</button>
+  </div>
+</header>
+<aside class="sidebar">
+  <a href="工作台.html" class="menu-item" style="display:none;"><span class="icon">🏠</span><span>首页工作台</span></a>
+  <a href="个人报名信息.html" class="menu-item"><span class="icon">📋</span><span>个人报名信息</span></a>
+  <a href="我的课程.html" class="menu-item" data-lock="1"><span class="icon">📚</span><span>我的课程</span></a>
+  <a href="缴费订单.html" class="menu-item"><span class="icon">💰</span><span>缴费订单</span></a>
+  <a href="我的考试.html" class="menu-item" data-lock="1"><span class="icon">📝</span><span>我的考试</span></a>
+  <a href="继续教育档案.html" class="menu-item" style="display:none;"><span class="icon">📄</span><span>继续教育档案</span></a>
+  <a href="我的证书.html" class="menu-item" style="display:none;"><span class="icon">🎓</span><span>我的证书</span></a>
+  <a href="系统公告.html" class="menu-item" style="display:none;"><span class="icon">📢</span><span>系统公告</span></a>
+  <a href="帮助中心.html" class="menu-item active" style="display:none;"><span class="icon">❓</span><span>帮助中心</span></a>
+</aside>
+<main class="main">
+  <div class="page-title">帮助中心</div>
+  <section class="card">
+    <div class="big">❓</div>
+    <h3>帮助中心（占位页）</h3>
+    <p>本批次原型暂未交付帮助中心页面。<br>后续批次将开发常见问题、使用指南、在线客服等功能。</p>
+  </section>
+</main>
+<script>
+  (function() {
+    const status = sessionStorage.getItem('qual_status') || 'approved';
+    if (status === 'pending' || status === 'rejected') {
+      const tip = status === 'pending' ? '资质待审核，暂不可访问该模块' : '资质审核未通过，请修改后重新提交';
+      document.querySelectorAll('.menu-item[data-lock="1"]').forEach(item => {
+        item.classList.add('disabled');
+        item.setAttribute('href', 'javascript:void(0)');
+        item.addEventListener('click', e => { e.preventDefault(); alert(tip); });
+      });
+    }
+  })();
+  function logout() { sessionStorage.clear(); window.location.href = '登录.html'; }
+</script>
+</body>
+</html>

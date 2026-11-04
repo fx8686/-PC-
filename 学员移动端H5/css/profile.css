@@ -1,0 +1,337 @@
+/* ============================================================
+ * 个人报名信息页专用样式
+ * ============================================================ */
+
+/* 用户信息卡片 */
+.user-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 14px;
+}
+
+.avatar {
+  flex: 0 0 auto;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--primary-light);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.user-main { flex: 1; min-width: 0; }
+.user-name { font-size: 16px; font-weight: 600; }
+.user-main .muted { margin-top: 2px; }
+
+/* 档案卡片 */
+.archive-card .card-head { margin-bottom: 4px; }
+.archive-card .kv { padding: 6px 0; }
+.archive-card .kv .v { max-width: 62%; }
+.archive-card .card-actions { margin-top: 10px; }
+.archive-card .card-actions .btn { flex: 1; }
+
+.archive-lock-tip {
+  margin-top: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #fafafa;
+  color: var(--text-3);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* 表单：日期区间 */
+.date-range { display: flex; align-items: center; gap: 8px; }
+.date-range .input { flex: 1; min-width: 0; padding: 0 8px; font-size: 14px; }
+.date-range .sep { flex: 0 0 auto; font-size: 13px; color: var(--text-3); }
+
+/* 上传九宫格 */
+.upload-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.upload-tile {
+  position: relative;
+  height: 96px;
+  border: 1px dashed #d9d9d9;
+  border-radius: 10px;
+  background: #fafafa;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text-3);
+  overflow: hidden;
+}
+
+.upload-tile input[type="file"] {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  opacity: 0;
+}
+
+.upload-tile .tile-ico { font-size: 20px; line-height: 1; }
+.upload-tile .tile-text { font-size: 12px; }
+
+.upload-tile img {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.upload-tile.has-img { border-style: solid; border-color: #91caff; background: #fff; }
+
+.upload-tile .tile-del {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  z-index: 3;
+  width: 22px;
+  height: 22px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 13px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 空状态卡片 */
+.empty-card {
+  padding: 40px 20px;
+  background: #fff;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  text-align: center;
+  color: var(--text-3);
+  font-size: 13px;
+}
+.empty-card .ico { display: block; margin-bottom: 8px; font-size: 30px; }
+
+/* ========== 全局共用材料卡片 ========== */
+.shared-card { padding: 14px; }
+.shared-tip {
+  background: #fffbe6; border: 1px solid #ffe58f; border-radius: 8px;
+  padding: 10px 12px; font-size: 12px; color: #614700;
+  display: flex; gap: 8px; line-height: 1.6; margin-bottom: 14px;
+}
+.shared-tip .ico { font-size: 16px; line-height: 1; flex-shrink: 0; margin-top: 1px; }
+.shared-tip b { color: #d48806; }
+
+.shared-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; background: #fafcff; border: 1px solid #e6f0ff;
+  border-radius: 8px; margin-bottom: 14px;
+}
+.shared-label { font-size: 13px; color: #595959; min-width: 68px; }
+.shared-value { font-size: 14px; font-weight: 500; color: #1f1f1f; }
+.shared-hint { font-size: 11px; color: #8c8c8c; margin-left: auto; }
+
+.shared-uploads {
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px;
+}
+.shared-uploads .upload-tile { height: 108px; }
+.upload-tile .tile-sub {
+  font-size: 10px; color: #bfbfbf; position: absolute; bottom: 8px;
+}
+
+.shared-foot {
+  display: flex; justify-content: space-between; align-items: center;
+  padding-top: 8px; border-top: 1px solid #f5f5f5; font-size: 12px; color: #595959;
+}
+.shared-foot b { color: #1677ff; }
+
+/* 表单弹层里的单张 certImg（独占一行） */
+.upload-grid.single {
+  display: grid; grid-template-columns: 1fr; gap: 10px;
+}
+.upload-grid.single .upload-tile {
+  height: 140px;
+}
+
+/* ========== 底部悬浮批量操作栏 ========== */
+.batch-bar-float {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 60;
+  background: #fff; border-top: 1px solid #f0f0f0;
+  padding: 10px 14px calc(env(safe-area-inset-bottom) + 10px);
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.06);
+  transform: translateY(100%); transition: transform 0.25s ease;
+}
+.batch-bar-float.show { transform: translateY(0); }
+.batch-bar-float .bar-stat {
+  font-size: 12px; color: #595959; margin-bottom: 8px;
+}
+.batch-bar-float .bar-stat b { color: #1677ff; font-weight: 600; }
+.batch-bar-float .bar-stat .ok { color: #52c41a; font-weight: 500; }
+.batch-bar-float .bar-stat .bad { color: #fa8c16; font-weight: 500; }
+.batch-bar-float .bar-actions {
+  display: flex; gap: 10px;
+}
+.batch-bar-float .bar-actions .btn { flex: 1; }
+
+/* ========== 批量提交确认弹层 ========== */
+.sheet-batch { max-height: 85vh; }
+
+.batch-shared-box {
+  background: #fafcff; border: 1px solid #e6f0ff; border-radius: 10px;
+  padding: 12px 14px; margin-bottom: 14px;
+  font-size: 13px; color: #1f1f1f; line-height: 1.8;
+}
+.batch-shared-box .st-row {
+  display: flex; align-items: center; gap: 8px;
+}
+.batch-shared-box .st-row + .st-row { margin-top: 4px; }
+.batch-shared-box .st-icon { font-size: 16px; }
+.batch-shared-box .st-label { color: #595959; min-width: 100px; }
+.batch-shared-box .st-val.ready { color: #52c41a; font-weight: 600; }
+.batch-shared-box .st-val.wait { color: #fa8c16; font-weight: 600; }
+
+.batch-section-title {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 14px; font-weight: 600; color: #1f1f1f;
+  padding-bottom: 10px; margin-bottom: 10px;
+  border-bottom: 1px solid #f5f5f5;
+}
+.batch-section-title .batch-count {
+  background: #e6f4ff; color: #1677ff; font-size: 12px;
+  padding: 2px 8px; border-radius: 10px; font-weight: 600;
+}
+
+/* 待提交工种卡片 */
+.batch-item {
+  display: flex; align-items: center; gap: 10px;
+  background: #fff; border: 1px solid #f0f0f0; border-radius: 10px;
+  padding: 12px 14px; margin-bottom: 10px;
+  position: relative;
+}
+.batch-item .bi-num {
+  flex: 0 0 auto; width: 28px; height: 28px; border-radius: 50%;
+  background: #e6f4ff; color: #1677ff; font-size: 13px; font-weight: 600;
+  display: flex; align-items: center; justify-content: center;
+}
+.batch-item .bi-err-mark {
+  flex: 0 0 auto; width: 28px; height: 28px; border-radius: 50%;
+  background: #fff2e8; color: #fa8c16; font-size: 13px; font-weight: 600;
+  display: flex; align-items: center; justify-content: center;
+}
+.batch-item .bi-info { flex: 1; min-width: 0; }
+.batch-item .bi-name {
+  font-size: 14px; font-weight: 600; color: #1f1f1f;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.batch-item .bi-sub {
+  font-size: 11px; color: #8c8c8c; margin-top: 3px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.batch-item .bi-err-hint {
+  font-size: 11px; color: #fa8c16; margin-top: 3px;
+}
+
+/* 空态（没有 draft） */
+.batch-empty {
+  text-align: center; padding: 30px 0;
+  font-size: 13px; color: #bfbfbf;
+}
+
+/* 同步说明 */
+.batch-sync-tip {
+  margin-top: 14px;
+  background: #f6ffed; border: 1px solid #b7eb8f; border-radius: 8px;
+  padding: 10px 12px; font-size: 12px; color: #389e0d;
+  display: flex; gap: 8px; align-items: flex-start; line-height: 1.6;
+}
+.batch-sync-tip .ico { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+
+/* ========== 多工种批量弹层样式 ========== */
+.sheet-multi { max-height: 92vh; display: flex; flex-direction: column; }
+.sheet-multi .sheet-body { flex: 1; overflow-y: auto; padding: 0 14px 14px; }
+
+/* 共用材料状态提示条（弹层内顶部） */
+.sheet-shared-tip {
+  margin: 12px 14px 14px; padding: 10px 12px; border-radius: 8px;
+  font-size: 12px; line-height: 1.7;
+  background: #fafcff; border: 1px solid #e6f0ff; color: #1f1f1f;
+}
+.sheet-shared-tip.st-ok { background: #f6ffed; border-color: #b7eb8f; color: #389e0d; }
+.sheet-shared-tip.st-wait { background: #fffbe6; border-color: #ffe58f; color: #874d00; }
+.sheet-shared-tip .st-icon { margin-right: 6px; }
+
+/* 工种列表 */
+.wt-list { display: flex; flex-direction: column; gap: 12px; }
+
+/* 单个工种行 */
+.wt-row {
+  background: #fff; border: 1px solid #f0f0f0; border-radius: 10px;
+  overflow: hidden;
+}
+.wt-row-head {
+  display: flex; align-items: center; gap: 8px;
+  background: #fafafa; padding: 10px 12px; border-bottom: 1px solid #f0f0f0;
+}
+.wt-row-num {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: #e6f4ff; color: #1677ff; font-size: 12px; font-weight: 600;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.wt-row-title {
+  font-size: 13px; font-weight: 600; color: #1f1f1f; flex: 1;
+}
+.wt-row-del {
+  width: 24px; height: 24px; border: 0; border-radius: 50%;
+  background: #fff1f0; color: #ff4d4f; font-size: 14px; line-height: 1;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+.wt-row-del:active { background: #ffccc7; }
+
+.wt-row-body { padding: 12px; }
+.wt-field { margin-bottom: 12px; }
+.wt-field:last-child { margin-bottom: 0; }
+.wt-field label {
+  display: block; font-size: 12px; color: #595959; margin-bottom: 5px;
+  font-weight: 500;
+}
+.wt-field label .req { color: #ff4d4f; margin-left: 2px; }
+.wt-field .wt-err {
+  font-size: 11px; color: #ff4d4f; margin-top: 4px;
+  min-height: 0; display: none;
+}
+.wt-field.error .wt-err { display: block; }
+.wt-field.error .input,
+.wt-field.error .select { border-color: #ff4d4f; }
+
+/* "＋ 添加报名工种"按钮 */
+.wt-add-btn {
+  width: 100%; height: 44px; margin-top: 12px;
+  background: #fff; border: 1px dashed #1677ff; border-radius: 10px;
+  color: #1677ff; font-size: 13px; font-weight: 500; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.wt-add-btn:active { background: #e6f4ff; }
+.wt-add-btn .plus { font-size: 16px; font-weight: 700; }
+
+/* 弹层底部 */
+.sheet-multi .sheet-foot {
+  border-top: 1px solid #f0f0f0; padding: 12px 14px;
+  display: flex; align-items: center; gap: 10px;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 12px);
+}
+.foot-stat { font-size: 12px; color: #595959; flex-shrink: 0; }
+.foot-stat b { color: #1677ff; font-weight: 600; font-size: 13px; }
+.foot-btns { display: flex; gap: 8px; flex: 1; }
+.foot-btns .btn { flex: 1; padding: 0 10px; height: 36px; }
