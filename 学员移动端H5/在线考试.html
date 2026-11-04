@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>在线考试 - 特殊工种延期教育系统</title>
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/exam-do.css">
+</head>
+<body data-page="examdo" class="no-copy">
+<div class="app">
+
+  <!-- 顶部导航（独立布局：考试页无底部标签栏，禁止复制） -->
+  <header class="sub-navbar">
+    <a class="back" id="btn-exit" href="我的考试.html" aria-label="退出考试">‹</a>
+    <span class="sub-title" id="nav-title">在线考试</span>
+    <span class="timer" id="timer">60:00</span>
+  </header>
+
+  <main class="page" id="exam-main">
+
+    <!-- 考试信息条 -->
+    <div class="exam-meta-bar">
+      <span id="meta-name">—</span>
+      <span class="meta-right">共 <b id="meta-total">80</b> 题 · 满分 100 · 合格 60</span>
+    </div>
+
+    <!-- 题目卡 -->
+    <section class="card q-card">
+      <div class="q-title" id="q-title"></div>
+      <div id="q-options"></div>
+      <div class="q-toolbar">
+        <button class="mark-btn" id="mark-btn" type="button">🚩 标记本题</button>
+        <span class="q-count">第 <b id="cur-num">1</b> / <span id="q-total">80</span> 题</span>
+      </div>
+    </section>
+
+    <!-- 答题提示 -->
+    <div class="submit-tip">单选 / 判断题点击选项即作答；多选题可多选，漏选、错选均不得分。</div>
+  </main>
+
+  <!-- 底部固定操作栏 -->
+  <footer class="exam-footer">
+    <button class="btn btn-ghost foot-grid" id="btn-grid" type="button">答题卡</button>
+    <button class="btn btn-ghost foot-nav" id="btn-prev" type="button">上一题</button>
+    <button class="btn btn-primary foot-nav" id="btn-next" type="button">下一题</button>
+  </footer>
+
+  <!-- 答题卡弹层（底部滑出） -->
+  <div class="mask" id="sheet-grid">
+    <div class="sheet">
+      <div class="sheet-head">
+        <div class="sheet-title">答题卡（已答 <b id="answered-count">0</b>/80）</div>
+        <button class="sheet-close" data-close="sheet-grid">×</button>
+      </div>
+      <div class="sheet-body">
+        <div class="grid-legend">
+          <span><i class="lg answered"></i>已答</span>
+          <span><i class="lg marked"></i>已标记</span>
+          <span><i class="lg current"></i>当前</span>
+        </div>
+        <div class="q-grid" id="q-grid"></div>
+      </div>
+      <div class="sheet-foot">
+        <button class="btn btn-primary btn-block" id="btn-submit-grid" type="button">交卷</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 交卷确认弹窗（居中） -->
+  <div class="mask center" id="dialog-submit">
+    <div class="dialog">
+      <div class="dlg-title">确认交卷？</div>
+      <div class="dlg-text">您还有 <b id="unanswered-num">0</b> 题未作答。<br>交卷后将立即判分，确认提交试卷吗？</div>
+      <div class="dlg-actions two">
+        <button class="btn btn-ghost" data-close="dialog-submit">继续答题</button>
+        <button class="btn btn-primary" id="btn-submit-ok">确认交卷</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 考试超时弹窗（居中） -->
+  <div class="mask center" id="dialog-timeout">
+    <div class="dialog">
+      <div class="dlg-icon warn">!</div>
+      <div class="dlg-title">考试时间到</div>
+      <div class="dlg-text">答题时间已用完，系统将自动交卷判分。</div>
+    </div>
+  </div>
+
+  <!-- 考试结果视图（交卷后替换主内容） -->
+  <main class="page hide" id="result-main">
+    <section class="card result-card">
+      <div class="result-score">
+        <div class="score-num" id="r-score">0</div>
+        <div class="score-unit">分</div>
+      </div>
+      <div class="result-tag" id="r-tag">合格</div>
+      <div class="result-stats">
+        <div class="stat"><b id="r-correct">0</b><span>答对</span></div>
+        <div class="stat"><b id="r-wrong">0</b><span>答错</span></div>
+        <div class="stat"><b id="r-time">—</b><span>用时</span></div>
+      </div>
+      <div class="result-tip" id="r-tip"></div>
+      <div class="dlg-actions">
+        <a class="btn btn-primary btn-block" href="我的考试.html">返回我的考试</a>
+      </div>
+    </section>
+  </main>
+
+</div>
+<script src="js/util.js"></script>
+<script src="js/store.js"></script>
+<script src="js/api.js"></script>
+<script src="js/exam-do.js"></script>
+</body>
+</html>

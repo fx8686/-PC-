@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>个人报名信息 - 特殊工种延期教育系统（移动端）</title>
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/profile.css">
+</head>
+<body data-page="profile">
+
+<div class="app">
+  <header class="navbar">
+    <span class="nav-btn"></span>
+    <span class="nav-title">个人报名信息</span>
+    <button class="nav-btn right" id="btn-logout" type="button">退出</button>
+  </header>
+
+  <main class="page">
+    <!-- 当前登录用户基本信息 -->
+    <section class="card user-card">
+      <div class="avatar" id="user-avatar">张</div>
+      <div class="user-main">
+        <div class="user-name" id="user-name">—</div>
+        <div class="muted" id="user-idcard">—</div>
+        <div class="muted" id="user-phone">—</div>
+      </div>
+      <!-- 认证状态标签（按演示要求取消显示，去掉 hide 类即可恢复） -->
+      <span class="tag tag-default hide" id="user-status">—</span>
+    </section>
+
+    <!-- 全局共用材料（一次上传 · 所有工种共用） -->
+    <section class="card shared-card">
+      <div class="shared-tip">
+        <span class="ico">📌</span>
+        <span>身份证正/反面、体检报告为本次报名<b>所有工种共用</b>，仅需上传一次，提交时自动同步应用到每个工种档案中。</span>
+      </div>
+
+      <!-- 学习类型（全局只读） -->
+      <div class="shared-row">
+        <span class="shared-label">学习类型</span>
+        <span class="shared-value">继续教育学员</span>
+        <span class="shared-hint">本系统仅支持继续教育学员报名 · 全局共用</span>
+      </div>
+
+      <!-- 共用材料上传 -->
+      <div class="shared-uploads">
+        <label class="upload-tile shared" data-key="idFront">
+          <input type="file" accept="image/*" capture="environment">
+          <span class="tile-ico">🪪</span>
+          <span class="tile-text">身份证正面 <span class="req">*</span></span>
+          <span class="tile-sub">人像面</span>
+          <img class="hide" alt="身份证正面">
+          <button type="button" class="tile-del hide" data-del="idFront">×</button>
+        </label>
+        <label class="upload-tile shared" data-key="idBack">
+          <input type="file" accept="image/*" capture="environment">
+          <span class="tile-ico">🪪</span>
+          <span class="tile-text">身份证反面 <span class="req">*</span></span>
+          <span class="tile-sub">国徽面</span>
+          <img class="hide" alt="身份证反面">
+          <button type="button" class="tile-del hide" data-del="idBack">×</button>
+        </label>
+        <label class="upload-tile shared" data-key="healthReport">
+          <input type="file" accept="image/*" capture="environment">
+          <span class="tile-ico">📋</span>
+          <span class="tile-text">体检报告 <span class="req">*</span></span>
+          <span class="tile-sub">近三个月内</span>
+          <img class="hide" alt="体检报告">
+          <button type="button" class="tile-del hide" data-del="healthReport">×</button>
+        </label>
+      </div>
+      <div class="shared-foot">
+        <button type="button" class="link-btn" id="btn-template">⬇ 下载体检表模板</button>
+        <span class="hint">共用材料 <b id="shared-count">0</b> / 3 已上传</span>
+      </div>
+    </section>
+
+    <!-- 报名档案列表 -->
+    <div class="section-head">
+      <span class="section-title">报名工种</span>
+      <button class="btn btn-primary btn-sm" id="btn-add" type="button">＋ 新增报名</button>
+    </div>
+    <div id="archive-list">
+      <div class="skeleton"></div>
+      <div class="skeleton"></div>
+    </div>
+    <p class="hint" style="padding:0 4px;">一人可报名多个工种；每个工种独立缴费、独立累计学时、独立生成证书。</p>
+  </main>
+</div>
+
+<!-- ==================== 报名表单弹层（多工种批量） ==================== -->
+<div class="mask" id="sheet-archive">
+  <div class="sheet sheet-multi">
+    <div class="sheet-head">
+      <span>新增报名</span>
+      <button class="sheet-close" type="button" data-close="sheet-archive">×</button>
+    </div>
+
+    <!-- 弹层内共用材料状态提示（只读，从页面顶部同步） -->
+    <div class="sheet-shared-tip" id="sheet-shared-tip"></div>
+
+    <div class="sheet-body">
+      <!-- 工种清单区域 -->
+      <div class="wt-list" id="wt-list">
+        <!-- 第 1 个工种（模板，JS 动态生成 / 增删） -->
+      </div>
+      <button class="wt-add-btn" type="button" id="wt-add-btn">
+        <span class="plus">＋</span> 添加报名工种
+      </button>
+    </div>
+
+    <div class="sheet-foot">
+      <div class="foot-stat" id="foot-stat">共 1 个工种</div>
+      <div class="foot-btns">
+        <button class="btn btn-ghost btn-sm" id="btn-draft" type="button">保存草稿</button>
+        <button class="btn btn-primary btn-sm" id="btn-submit" type="button">提交全部报名</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 工种卡片模板（隐藏，JS cloneNode 生成） -->
+<template id="wt-row-tpl">
+  <div class="wt-row">
+    <div class="wt-row-head">
+      <span class="wt-row-num">1</span>
+      <span class="wt-row-title">报名工种一</span>
+      <button type="button" class="wt-row-del" title="删除此工种">×</button>
+    </div>
+    <div class="wt-row-body">
+      <div class="wt-field wt-field-select">
+        <label>报名工种<span class="req">*</span></label>
+        <select class="select wt-workType">
+          <option value="">请选择工种</option>
+        </select>
+        <div class="wt-err"></div>
+      </div>
+      <div class="wt-field">
+        <label>证书编号<span class="req">*</span></label>
+        <input class="input wt-certNo" type="text" maxlength="30" placeholder="请输入特种作业操作证编号">
+        <div class="wt-err"></div>
+      </div>
+      <div class="wt-field">
+        <label>证书有效期<span class="req">*</span></label>
+        <div class="date-range">
+          <input class="input wt-validFrom" type="date">
+          <span class="sep">至</span>
+          <input class="input wt-validTo" type="date">
+        </div>
+        <div class="wt-err"></div>
+      </div>
+      <div class="wt-field wt-field-upload">
+        <label>证书照片（本工种独立）<span class="req">*</span></label>
+        <div class="upload-grid single">
+          <label class="upload-tile">
+            <input type="file" accept="image/*" capture="environment">
+            <span class="tile-ico">📜</span>
+            <span class="tile-text">点击上传证书照片</span>
+            <img class="hide" alt="证书照片">
+            <button type="button" class="tile-del hide">×</button>
+          </label>
+        </div>
+        <div class="wt-err"></div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<!-- ==================== 删除确认 ==================== -->
+<div class="mask center" id="dialog-delete">
+  <div class="dialog">
+    <div class="dialog-icon warn">!</div>
+    <div class="dialog-title">删除报名档案</div>
+    <div class="dialog-text" id="delete-text">删除后需重新填写报名材料，确定删除该报名档案吗？</div>
+    <div class="dialog-actions">
+      <button class="btn btn-ghost" type="button" data-close="dialog-delete">取消</button>
+      <button class="btn btn-primary" id="btn-confirm-delete" type="button">确定删除</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 提交成功 ==================== -->
+<div class="mask center" id="dialog-submit">
+  <div class="dialog">
+    <div class="dialog-icon success">✓</div>
+    <div class="dialog-title">提交成功</div>
+    <div class="dialog-text">报名信息已提交，等待管理员审核。<br>审核通过后可在「缴费订单」中完成缴费并开始学习。</div>
+    <div class="dialog-actions">
+      <button class="btn btn-primary" type="button" data-close="dialog-submit">我知道了</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 底部悬浮批量操作栏 ==================== -->
+<div class="batch-bar-float" id="batch-bar">
+  <div class="bar-stat">
+    草稿 <b id="bar-draft-num">0</b> ·
+    共用材料 <b id="bar-shared-num">0</b>/3 ·
+    <span id="bar-shared-hint" class="ok">可批量提交</span>
+  </div>
+  <div class="bar-actions">
+    <button class="btn btn-ghost btn-sm" id="btn-batch-reset" type="button">清空草稿</button>
+    <button class="btn btn-primary btn-sm" id="btn-batch-submit" type="button">批量提交</button>
+  </div>
+</div>
+
+<!-- ==================== 批量提交确认弹层 ==================== -->
+<div class="mask" id="sheet-batch-confirm">
+  <div class="sheet sheet-batch">
+    <div class="sheet-head">
+      <span>批量提交报名</span>
+      <button class="sheet-close" type="button" data-close="sheet-batch-confirm">×</button>
+    </div>
+    <div class="sheet-body">
+      <!-- 共用材料状态 -->
+      <div class="batch-shared-box" id="batch-shared-box"></div>
+
+      <!-- 待提交工种清单 -->
+      <div class="batch-section-title">
+        <span>待提交工种清单</span>
+        <span class="batch-count" id="batch-count">0</span>
+      </div>
+      <div id="batch-list"></div>
+
+      <!-- 同步说明 -->
+      <div class="batch-sync-tip">
+        <span class="ico">🔄</span>
+        共用材料将自动同步到以上每一个报名工种档案中。
+      </div>
+    </div>
+    <div class="sheet-foot">
+      <button class="btn btn-ghost" type="button" data-close="sheet-batch-confirm">取消</button>
+      <button class="btn btn-primary" id="btn-batch-confirm" type="button">确认批量提交</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 批量提交结果 ==================== -->
+<div class="mask center" id="dialog-batch-result">
+  <div class="dialog">
+    <div class="dialog-icon success">✓</div>
+    <div class="dialog-title" id="batch-result-title">批量提交完成</div>
+    <div class="dialog-text" id="batch-result-text">—</div>
+    <div class="dialog-actions">
+      <button class="btn btn-primary" type="button" data-close="dialog-batch-result">我知道了</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/util.js"></script>
+<script src="js/store.js"></script>
+<script src="js/api.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/profile.js"></script>
+</body>
+</html>

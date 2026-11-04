@@ -1,0 +1,164 @@
+/* ============================================================
+ * 我的课程页专用样式
+ * ============================================================ */
+
+/* 报名档案卡片 */
+.archive-card .card-head { margin-bottom: 8px; }
+.archive-card .kv { padding: 5px 0; }
+.archive-card .kv .v { max-width: 62%; }
+
+.hours-line {
+  margin: 10px 0 4px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #fafafa;
+}
+
+.hours-line .num {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+.hours-line .num b {
+  font-size: 17px;
+  color: var(--primary);
+}
+
+.hours-line .num b.ok { color: #13c2c2; }
+.hours-line .num b.warn { color: var(--warning); }
+
+.archive-card .card-actions { margin-top: 10px; }
+.archive-card .card-actions .btn { flex: 1; }
+
+.action-tip {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--text-3);
+  text-align: center;
+}
+
+/* 课程卡片 */
+.course-card {
+  display: block;
+  padding: 14px;
+  margin-bottom: 12px;
+  background: #fff;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.course-card .c-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.course-card .c-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.course-card .c-meta {
+  margin-bottom: 10px;
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+.course-card .c-foot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.course-card .c-foot .progress { flex: 1; }
+.course-card .c-pct { flex: 0 0 auto; font-size: 12px; color: var(--text-2); }
+
+/* 课程学习弹层 */
+.cd-meta {
+  margin-bottom: 14px;
+  font-size: 13px;
+  color: var(--text-3);
+}
+
+.cd-progress {
+  padding: 14px;
+  margin-bottom: 14px;
+  background: #fafafa;
+  border-radius: 10px;
+}
+
+.cd-progress .progress { height: 8px; margin-bottom: 8px; }
+
+.cd-stat {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+.notice {
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: var(--primary-light);
+  color: #0958d9;
+  font-size: 12px;
+  line-height: 1.8;
+}
+
+/* 安全生产教育培训证书（与 PC 端样式保持一致，无专用章） */
+.safety-cert {
+  position: relative;
+  padding: 22px 18px;
+  border: 2px solid #cf1322;
+  border-radius: 10px;
+  background: #fffaf0;
+}
+
+.safety-cert::before {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border: 1px dashed #ff7875;
+  border-radius: 7px;
+  pointer-events: none;
+}
+
+.safety-cert-title {
+  margin-bottom: 4px;
+  text-align: center;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #cf1322;
+}
+
+.safety-cert-sub {
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f0d0d0;
+  text-align: center;
+  font-size: 10px;
+  color: var(--text-3);
+}
+
+.safety-cert-body {
+  font-size: 13px;
+  line-height: 2;
+}
+
+.safety-cert-body .label {
+  display: inline-block;
+  width: 78px;
+  color: var(--text-3);
+}
+
+.safety-cert-body .val { font-weight: 600; color: #1f1f1f; }
+.safety-cert-body .cert-no { font-family: 'Courier New', monospace; color: #cf1322; font-weight: 700; }

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>课程播放 - 特殊工种延期教育系统</title>
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/player.css">
+</head>
+<body data-page="player">
+<div class="app">
+
+  <!-- 顶部导航（独立布局：课程播放页无底部标签栏） -->
+  <header class="sub-navbar">
+    <a class="back" href="我的课程.html" aria-label="返回我的课程">‹</a>
+    <span class="sub-title" id="nav-title">课程播放</span>
+    <span class="hb-hours"><span id="hb-total">0.0</span>/<span id="hb-target">21</span> 学时</span>
+  </header>
+
+  <main class="page">
+
+    <!-- 学时状态条 -->
+    <div class="hours-bar">
+      <div class="hb-item">
+        <span class="hb-label">累计学时</span>
+        <span class="hb-value"><b id="bar-total">0.0</b> / 21</span>
+      </div>
+      <div class="hb-item">
+        <span class="hb-label">24小时内</span>
+        <span class="hb-value"><b id="bar-24h">0.0</b>（上限 7）</span>
+      </div>
+    </div>
+
+    <!-- 模拟视频播放器 -->
+    <div class="video-box" id="video-box">
+      <div class="video-screen">
+        <div class="video-bg"></div>
+        <div class="video-mark">🛡️ 安全生产培训教学视频</div>
+        <div class="video-playing-tag" id="playing-tag">● 正常播放中（禁止快进）</div>
+      </div>
+      <button class="btn-play" id="btn-play" aria-label="播放/暂停">▶</button>
+      <!-- 进度条：仅展示，禁止拖拽 -->
+      <div class="progress-line" id="progress-line" title="禁止快进拖拽">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+      <div class="time-row">
+        <span id="time-text">00:00 / 约 00:00</span>
+        <span id="speed-text">倍速 1.0x</span>
+      </div>
+    </div>
+
+    <!-- 业务规则提示 -->
+    <div class="rule-tip">
+      学习规则：正常观看每 <b>60 秒</b>计 <b>1</b> 学时（演示压缩，真实为 60 分钟）；禁止快进拖拽与倍速；
+      同一章节仅计一次学时；24 小时内最多累计 <b>7</b> 学时，达标 <b>21</b> 学时后可参加考试。
+    </div>
+
+    <!-- 当前章节（按演示要求隐藏，去掉 hide 类即可恢复显示） -->
+    <div class="cur-chapter hide">当前章节：<b id="cur-chapter">—</b></div>
+
+    <!-- 章节列表（按演示要求隐藏，去掉 hide 类即可恢复显示） -->
+    <section class="card chapter-card hide">
+      <div class="card-head"><div class="card-title">课程章节</div></div>
+      <div id="chapter-list"></div>
+    </section>
+
+  </main>
+
+  <!-- 24 小时学时达上限弹窗（居中） -->
+  <div class="mask center" id="dialog-24h-cap">
+    <div class="dialog">
+      <div class="dlg-icon warn">!</div>
+      <div class="dlg-title">今日学时已达上限</div>
+      <div class="dlg-text">
+        您 24 小时内已累计 <b id="cap-current">7.0</b> 学时（上限 7 学时）。<br>
+        请明日再继续学习，学时将在达标 21 学时后解锁考试。
+      </div>
+      <div class="dlg-actions">
+        <button class="btn btn-primary btn-block" data-close="dialog-24h-cap">我知道了</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 学时达标弹窗（居中，与我的课程页达标提醒一致） -->
+  <div class="mask center" id="dialog-hours-done">
+    <div class="dialog">
+      <div class="dlg-icon ok">✓</div>
+      <div class="dlg-title">恭喜，学时已达标</div>
+      <div class="dlg-text">
+        您报名的「<b id="done-worktype">—</b>」累计学时已达到 21 学时。<br>
+        系统已生成安全生产教育培训证书，可以参加考试了。
+      </div>
+      <div class="dlg-actions two">
+        <button class="btn btn-ghost" data-close="dialog-hours-done">继续学习</button>
+        <a class="btn btn-primary" id="btn-goto-exam" href="我的考试.html">去考试</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+<script src="js/util.js"></script>
+<script src="js/store.js"></script>
+<script src="js/api.js"></script>
+<script src="js/player.js"></script>
+</body>
+</html>
